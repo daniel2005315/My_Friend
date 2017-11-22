@@ -8,7 +8,7 @@ var app = new alexa.app( 'my_friend' );
 
 // A few default intents to be handled
 app.launch( function( request, response ) {
-	response.say( 'Your friend is here!' ).shouldEndSession( false );
+	response.say( 'Your friend is here!' ).shouldEndSession( true );
 } );
 
 app.error = function( exception, request, response ) {
@@ -54,6 +54,10 @@ app.intent("AMAZON.CancelIntent", {
 
 // Play welcome home music
 
+app.intent("GreetingIntent",
+	function(request,response){
+		response.say("Greetings from Your Friend. Your skill is ready.");
+	});
 // Testing, hard coded playng music
 app.intent("WelcomeMusicIntent", {
   // Try specifying nothing
