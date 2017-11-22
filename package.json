@@ -1,0 +1,22 @@
+{
+  "name": "my_friend",
+  "version": "1.0.0",
+  "description": "2017-18 FYP Alexa Skill",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daniel2005315/My_Friend.git"
+  },
+  "author": "daniel.leung",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daniel2005315/My_Friend/issues"
+  },
+  "homepage": "https://github.com/daniel2005315/My_Friend#readme",
+  "dependencies": {
+    "alexa-app": "^4.2.0"
+  }
+}
