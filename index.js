@@ -38,6 +38,23 @@ app.intent("AMAZON.StopIntent", function(request, response) {
   }
 );
 
+// Added to handle pause ?
+// should be able to stop audio player
+app.intent("AMAZON.PauseIntent", function(request, response) {
+    var stopOutput = "Paused it for you";
+		response.audioPlayerStop();
+    response.say(stopOutput);
+  }
+);
+
+// should be able to stop audio player
+app.intent("AMAZON.ResumeIntent", function(request, response) {
+    var stopOutput = "It has not yet been implemented";
+		//response.audioPlayerStop();
+    response.say(stopOutput);
+  }
+);
+
 // respond to "Nothing"
 app.intent("AMAZON.CancelIntent", {
     "slots": {},
