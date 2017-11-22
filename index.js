@@ -30,15 +30,15 @@ app.intent("AMAZON.HelpIntent", {
   }
 );
 
-app.intent("AMAZON.StopIntent", {
-    "slots": {},
-    "utterances": []
-  }, function(request, response) {
-    var stopOutput = "Don't You Worry. I'll be back.";
+// should be able to stop audio player
+app.intent("AMAZON.StopIntent", function(request, response) {
+    var stopOutput = "Come back later!";
+		response.audioPlayerStop();
     response.say(stopOutput);
   }
 );
 
+// respond to "Nothing"
 app.intent("AMAZON.CancelIntent", {
     "slots": {},
     "utterances": []
@@ -76,15 +76,25 @@ app.intent("WelcomeMusicIntent", {
   function(request,response) {
 		// Get user's
     response.say("Here's some welcoming music!");
+		// TODO:
+		// Fetch for user's favourite song lately
+		// put into the song variable
+		var song="floating.mp3";
+
+		// encoded the link for the song
+		var url = "https://evening-savannah-89199.herokuapp.com/music/"+song;
 		var stream={
 			"token": "90",
-			"url": "https://evening-savannah-89199.herokuapp.com/music/zensai.mp3",
+			"url": url,
 			"offsetInMilliseconds": 0
 		}
+		console.log("playing: "+url);
+		// Start the play directive
 		response.audioPlayerPlayStream("REPLACE_ALL", stream)
   }
 );
 
+// TODO: Handle the player object
 // Play music
 app.intent("MusicIntent", {
     "slots": {
@@ -116,7 +126,10 @@ app.intent("MusicIntent", {
 
 // Intent that train your friend to know more about you
 app.intent("ShareIntent",{
-	slots:{
+	"dialog":{
+		type:"delegate"
+	},
+	"slots":{
 		"userInfo": "UserInfo"
 	}
 
@@ -128,28 +141,42 @@ app.intent("ShareIntent",{
 			console.log("Get passed");
 
 			if(dialogState=="STARTED"){
-				var directive={
-				  "type": "Dialog.Delegate",
-				  "updatedIntent": {
-				    "name": "ShareIntent",
-				    "confirmationStatus": "NONE",
-				    "slots": {
-				      "string": {
-				        "name": "string",
-				        "value": "string",
-				        "confirmationStatus": "NONE"
-				      }
-				    }
-				  }
-				}
-				response.directive(directive);
-			}else{
+				var content="The card should be shown, and dialog starts\nWith the dialog state now as: "+dialogState;
 				response.card({
 					type:"Simple",
 					title:"Starting a Dialog",
-					content: "The card should be shown, and dialog starts"
+					content: content
+				});
+				response.say("Dialog started. Tell me more");
+			}else if(dialogState=="IN_PROGRESS"){
+				var content="dialog in process\nWith the dialog state now as: "+dialogState;
+				response.card({
+					type:"Simple",
+					title:"During a Dialog",
+					content: content
 				});
 				response.say("Tell me.");
+				response.shouldEndSession(false);
+			}else if(dialogState=="COMPLETED"){
+				var slot = request.slot('userInfo');
+				var content="dialog ended\nWith the dialog state now as: "+dialogState+"\nslot value: "+slot;
+				response.card({
+					type:"Simple",
+					title:"Ending a Dialog",
+					content: content
+				});
+				response.say("Dialog Ended.");
+				response.shouldEndSession(true);
+			}else{
+				var slot = request.slot('userInfo');
+				var content="A dialog should have started? current state: "+dialogState+"\nslot value: "+slot;
+				response.card({
+					type:"Simple",
+					title:"General case before dialog",
+					content: content
+				});
+				response.say("Tell me more.");
+				response.shouldEndSession(false);
 			}
 			//response.directive(directive);
 			/*
