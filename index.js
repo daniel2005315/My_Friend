@@ -223,7 +223,8 @@ app.intent("DialogTestIntent", {
 		var general_info = request.slot('UserInfo');
 
 		// TODO Try accessing the info
-		if(request.request.dialogState!="COMPLETED"){
+		var dialogState = request.data.request.dialogState;
+		if(dialogState==null||dialogState!="COMPLETED"){
 			console.log(request.type());
 			console.log(request.directive);
 			//console.log(request.directive());
@@ -235,7 +236,7 @@ app.intent("DialogTestIntent", {
 			console.log(response.response.response.directives);
 			console.log(response);
 			response.shouldEndSession(false);
-			var content="State= "+request.request.dialogState;
+			var content="State= "+dialogState;
 			response.card({
 				type:"Simple",
 				title:"TestDialogIntent",
