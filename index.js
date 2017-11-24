@@ -217,26 +217,37 @@ app.intent("DialogTestIntent", {
   }
   ,
   function(request,response) {
-    var animal = request.slot('animal');
+		// testing slot values
+		var animal = request.slot('animal');
     var music_genre = request.slot('music_genre');
 		var general_info = request.slot('UserInfo');
-		console.log(request.type());
-		console.log(request.directive);
-		//console.log(request.directive());
-		var dialog = [{
-				  "type": "Dialog.Delegate"
-		}];
-		// TODO: Set the custom directives
-		response.response.response.directives=dialog;
-		console.log(response.response.response.directives);
-		console.log(response);
-		response.shouldEndSession(false);
-		var content="dialog directive should be sent: "+dialog;
-		response.card({
-			type:"Simple",
-			title:"TestDialogIntent invoked",
-			content: content
-		});
+		// get dialog object
+		Dialog dialog = request.getDialog();
+
+		if(dialog.isCompleted()){
+			response.say("Outputs are, "+music_genre+animal+" with final message:"+general_info);
+		}else{
+			console.log(request.type());
+			console.log(request.directive);
+			//console.log(request.directive());
+			var dialog = [{
+					  "type": "Dialog.Delegate"
+			}];
+			// TODO: Set the custom directives
+			response.response.response.directives=dialog;
+			console.log(response.response.response.directives);
+			console.log(response);
+			response.shouldEndSession(false);
+			var content="dialog directive should be sent: "+dialog;
+			response.card({
+				type:"Simple",
+				title:"TestDialogIntent invoked",
+				content: content
+			});
+
+		}
+
+
 		//response.say("Testing dialog");
     //response.say("You wanna play some "+ musicType+" music by artist:["+musician+"]");
   }
