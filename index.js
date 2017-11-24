@@ -222,7 +222,7 @@ app.intent("DialogTestIntent", {
     var music_genre = request.slot('music_genre');
 		var general_info = request.slot('UserInfo');
 		// get dialog object
-		Dialog dialog = request.getDialog();
+		var dialog = request.getDialog();
 
 		if(dialog.isCompleted()){
 			response.say("Outputs are, "+music_genre+animal+" with final message:"+general_info);
