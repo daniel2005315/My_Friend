@@ -235,10 +235,10 @@ app.intent("DialogTestIntent", {
 			console.log(response.response.response.directives);
 			console.log(response);
 			response.shouldEndSession(false);
-			var content="dialog directive should be sent: "+dialog;
+			var content="dialog state: "+request.dialogState;
 			response.card({
 				type:"Simple",
-				title:"TestDialogIntent invoked",
+				title:"TestDialogIntent",
 				content: content
 			});
 
