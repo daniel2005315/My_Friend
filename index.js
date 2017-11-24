@@ -221,12 +221,9 @@ app.intent("DialogTestIntent", {
 		var animal = request.slot('animal');
     var music_genre = request.slot('music_genre');
 		var general_info = request.slot('UserInfo');
-		// get dialog object
-		var dialog = request.getDialog();
 
-		if(dialog.isCompleted()){
-			response.say("Outputs are, "+music_genre+animal+" with final message:"+general_info);
-		}else{
+
+		if(request.dialogState!="COMPLETED"){
 			console.log(request.type());
 			console.log(request.directive);
 			//console.log(request.directive());
@@ -245,12 +242,10 @@ app.intent("DialogTestIntent", {
 				content: content
 			});
 
+		}else {
+					response.say("Outputs are, "+music_genre+animal+" with final message:"+general_info);
 		}
-
-
-		//response.say("Testing dialog");
-    //response.say("You wanna play some "+ musicType+" music by artist:["+musician+"]");
-  }
+	}
 );
 /*
 // return the intent's dialogState
