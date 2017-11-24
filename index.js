@@ -235,7 +235,7 @@ app.intent("DialogTestIntent", {
 			console.log(response.response.response.directives);
 			console.log(response);
 			response.shouldEndSession(false);
-			var content="dialog state: "+request.dialogState;
+			var content="json: "+JSON.stringify(request);
 			response.card({
 				type:"Simple",
 				title:"TestDialogIntent",
