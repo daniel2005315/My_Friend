@@ -223,9 +223,9 @@ app.intent("DialogTestIntent", {
 		console.log(request.type());
 		console.log(request.directive);
 		//console.log(request.directive());
-		var dialog = {
+		var dialog = [{
 				  "type": "Dialog.Delegate"
-		};
+		}];
 		// TODO: Set the custom directives
 		response.response.response.directives=dialog;
 		console.log(response.response.response.directives);
