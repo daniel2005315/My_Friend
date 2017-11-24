@@ -18,6 +18,7 @@ app.error = function( exception, request, response ) {
 	response.say( 'Sorry an error occured ' + error.message);
 };
 
+// help messages
 app.intent("AMAZON.HelpIntent", {
     "slots": {},
     "utterances": []
@@ -30,7 +31,7 @@ app.intent("AMAZON.HelpIntent", {
   }
 );
 
-// should be able to stop audio player
+//  stop an intent
 app.intent("AMAZON.StopIntent", function(request, response) {
     var stopOutput = "Come back later!";
 		response.audioPlayerStop();
@@ -38,7 +39,7 @@ app.intent("AMAZON.StopIntent", function(request, response) {
   }
 );
 
-// Added to handle pause ?
+// PAUSEINTENT is used to handle audio player interrupt
 // should be able to stop audio player
 app.intent("AMAZON.PauseIntent", function(request, response) {
     var stopOutput = "Paused it for you";
@@ -47,7 +48,7 @@ app.intent("AMAZON.PauseIntent", function(request, response) {
   }
 );
 
-// should be able to stop audio player
+// Resume audio player status
 app.intent("AMAZON.ResumeIntent", function(request, response) {
     var stopOutput = "It has not yet been implemented";
 		//response.audioPlayerStop();
@@ -74,7 +75,10 @@ app.intent("AMAZON.CancelIntent", {
 app.intent("GreetingIntent",
 	function(request,response){
 		response.say("Greetings from Your Friend. Your skill is ready.");
-	});
+	}
+);
+
+
 // Testing, hard coded playng music
 app.intent("WelcomeMusicIntent", {
   // Try specifying nothing
@@ -113,21 +117,12 @@ app.intent("WelcomeMusicIntent", {
 
 // TODO: Handle the player object
 // Play music
+
 app.intent("MusicIntent", {
     "slots": {
       "MusicType": "AMAZON.Genre",
       "Musician": "AMAZON.Musician"
     }
-    /*,
-    // try leaving the utterances null as it is stated on Skill kit
-
-    "utterances": [
-      "find {-|searchPhrase}",
-  		"Google about {-|searchPhrase}",
-  		"tell me about {-|searchPhrase}",
-  		"I want to know about {-|searchPhrase}"
-    ]
-    */
   }
   ,
   function(request,response) {
@@ -140,6 +135,7 @@ app.intent("MusicIntent", {
     response.say("You wanna play some "+ musicType+" music by artist:["+musician+"]");
   }
 );
+
 
 // Intent that train your friend to know more about you
 app.intent("ShareIntent",{
@@ -185,6 +181,7 @@ app.intent("ShareIntent",{
 				response.say("Dialog Ended.");
 				response.shouldEndSession(true);
 			}else{
+				// TODO: Currently the intent just falls into
 				var slot = request.slot('userInfo');
 				var content="A dialog should have started? current state: "+dialogState+"\nslot value: "+slot;
 				response.card({
@@ -195,11 +192,47 @@ app.intent("ShareIntent",{
 				response.say("Tell me more.");
 				response.shouldEndSession(false);
 			}
+		});
 			//response.directive(directive);
 			/*
 			// return the Dialog object
 Dialog request.getDialog()
 
+// TODO: Testing intent to work with dialog
+*/
+app.intent("DialogTestIntent", {
+		"dialog":{
+			type:"delegate"
+		},
+    "slots": {
+      "animal": "AMAZON.Animal",
+      "music_genre": "AMAZON.Genre",
+			"general_info": "UserInfo"
+    }
+  }
+  ,
+  function(request,response) {
+    var animal = request.slot('animal');
+    var music_genre = request.slot('music_genre');
+		var general_info = request.slot('UserInfo');
+		console.log(request.type());
+		console.log(request.directive);
+		//console.log(request.directive());
+		var dialog = {
+			"dialog":{
+				type: "delegate"
+			}
+		};
+		// TODO: Set the custom directives
+		response.response.response.directives=dialog;
+		console.log(response.response.response.directives);
+		console.log(response);
+		response.shouldEndSession(false);
+		//response.say("Testing dialog");
+    //response.say("You wanna play some "+ musicType+" music by artist:["+musician+"]");
+  }
+);
+/*
 // return the intent's dialogState
 String request.dialogState
 
@@ -213,9 +246,6 @@ Boolean dialog.isInProgress()
 Boolean dialog.isCompleted()
 
 */
-
-		}
-	);
 
 
 module.exports = app;
