@@ -15,7 +15,7 @@ app.error = function( exception, request, response ) {
 	console.log(exception)
 	console.log(request);
 	console.log(response);
-	response.say( 'Sorry an error occured ' + error.message);
+	response.say( 'Sorry an error occured ');
 };
 
 // help messages
@@ -222,8 +222,8 @@ app.intent("DialogTestIntent", {
     var music_genre = request.slot('music_genre');
 		var general_info = request.slot('UserInfo');
 
-
-		if(request.dialogState!="COMPLETED"){
+		// TODO Try accessing the info
+		if(request.request.dialogState!="COMPLETED"){
 			console.log(request.type());
 			console.log(request.directive);
 			//console.log(request.directive());
@@ -235,7 +235,7 @@ app.intent("DialogTestIntent", {
 			console.log(response.response.response.directives);
 			console.log(response);
 			response.shouldEndSession(false);
-			var content="json: "+JSON.stringify(request);
+			var content="State= "+request.request.dialogState;
 			response.card({
 				type:"Simple",
 				title:"TestDialogIntent",
