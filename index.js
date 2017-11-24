@@ -73,7 +73,7 @@ app.intent("AMAZON.CancelIntent", {
 // TODO: For checking if the code is updated
 app.intent("TestIntent",
 	function(request,response){
-		response.say("Greetings from Jarvis. Current version is beta zero point four");
+		response.say("Greetings from Jarvis. Current version is beta one point zero");
 	}
 );
 
