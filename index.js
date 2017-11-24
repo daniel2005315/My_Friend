@@ -70,7 +70,12 @@ app.intent("AMAZON.CancelIntent", {
 
 // First line is Intent's name
 
-// Play welcome home music
+// TODO: For checking if the code is updated
+app.intent("TestIntent",
+	function(request,response){
+		response.say("Greetings from Your Friend. Current version is beta zero point three");
+	}
+);
 
 app.intent("GreetingIntent",
 	function(request,response){
