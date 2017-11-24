@@ -228,6 +228,12 @@ app.intent("DialogTestIntent", {
 		console.log(response.response.response.directives);
 		console.log(response);
 		response.shouldEndSession(false);
+		var content="dialog directive should be sent: "+dialog;
+		response.card({
+			type:"Simple",
+			title:"TestDialogIntent invoked",
+			content: content
+		});
 		//response.say("Testing dialog");
     //response.say("You wanna play some "+ musicType+" music by artist:["+musician+"]");
   }
