@@ -73,13 +73,13 @@ app.intent("AMAZON.CancelIntent", {
 // TODO: For checking if the code is updated
 app.intent("TestIntent",
 	function(request,response){
-		response.say("Greetings from Your Friend. Current version is beta zero point three");
+		response.say("Greetings from Jarvis. Current version is beta zero point four");
 	}
 );
 
 app.intent("GreetingIntent",
 	function(request,response){
-		response.say("Greetings from Your Friend. Your skill is ready.");
+		response.say("Greetings from Jarvis. System is standing by.");
 	}
 );
 
@@ -224,9 +224,7 @@ app.intent("DialogTestIntent", {
 		console.log(request.directive);
 		//console.log(request.directive());
 		var dialog = {
-			"dialog":{
-				type: "delegate"
-			}
+				  "type": "Dialog.Delegate"
 		};
 		// TODO: Set the custom directives
 		response.response.response.directives=dialog;
