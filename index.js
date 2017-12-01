@@ -156,7 +156,7 @@ app.intent("ShareIntent",{
 		    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
 		    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
 			}else{
-				var content = JSON.stringnify(request);
+				var content = JSON.stringify(request);
 				response.card({
 					type:"Simple",
 					title:"triggered",
