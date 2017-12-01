@@ -141,13 +141,30 @@ app.intent("MusicIntent", {
 app.intent("ShareIntent",{
 		"slots":{
 			"userInfo": "UserInfo"
+			"subject": "Subject"
 		}
 	},function(request, response) {
-
-			var clarify = "What would you like to talk about?";
-			var reprompt = "What is it about?"
-	    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
-	    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
+			var subject = request.slot('subject');
+			if(subject==null){
+				var dialog = [{
+						"type": "Dialog.ElicitSlot",
+						"slotToElicit": "subject",
+				}];
+				var clarify = "What would you like to talk about?";
+				var reprompt = "What is it about?"
+		    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
+		    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
+			}else{
+				if(subject==="Music")
+				{
+					var directive=[{"updatedIntent": {
+				    "name": "ShareMusicIntent"
+				  }
+				}];
+				response.response.response.directives=directive;
+				response.shouldEndSession(false);
+				}
+			}
 	}
 );
 
