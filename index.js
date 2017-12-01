@@ -152,6 +152,7 @@ app.intent("ShareIntent",{
 				}];
 				var clarify = "What would you like to talk about?";
 				var reprompt = "What is it about?";
+				response.response.response.directives=dialog;
 		    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
 		    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
 			}else{
