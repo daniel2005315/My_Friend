@@ -140,7 +140,7 @@ app.intent("MusicIntent", {
 // ... others are work in process
 app.intent("ShareIntent",{
 		"slots":{
-			"userInfo": "UserInfo"
+			"userInfo": "UserInfo",
 			"subject": "Subject"
 		}
 	},function(request, response) {
@@ -151,7 +151,7 @@ app.intent("ShareIntent",{
 						"slotToElicit": "subject",
 				}];
 				var clarify = "What would you like to talk about?";
-				var reprompt = "What is it about?"
+				var reprompt = "What is it about?";
 		    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
 		    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
 			}else{
