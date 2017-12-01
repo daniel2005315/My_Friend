@@ -158,12 +158,13 @@ app.intent("ShareIntent",{
 			}else{
 				var content = JSON.stringify(request);
 				var slot = request.data.request.intent.slots.subject;
+				var id = slot.resolutions.resolutionsPerAuthority[].values[].value.id;
 				content = JSON.stringify(slot);
 				//var status = request.data.request.intent.slots.subject.resolutions.resolutionsPerAuthority.values.value.id;
 				response.card({
 					type:"Simple",
 					title:"triggered",
-					content: content
+					content: slot
 				});
 				if(status==="MUSIC")
 				{
