@@ -144,7 +144,7 @@ app.intent("ShareIntent",{
 			"subject": "Subject"
 		}
 	},function(request, response) {
-			var subject = request.slots('subject');
+			var subject = request.slots['subject'];
 			if(subject==null){
 				var dialog = [{
 						"type": "Dialog.ElicitSlot",
