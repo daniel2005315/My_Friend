@@ -144,7 +144,7 @@ app.intent("ShareIntent",{
 			"subject": "Subject"
 		}
 	},function(request, response) {
-			var subject = request.slots['subject'];
+			var subject = request.slot('subject');
 			if(subject==null){
 				var dialog = [{
 						"type": "Dialog.ElicitSlot",
@@ -156,6 +156,7 @@ app.intent("ShareIntent",{
 		    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
 		    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
 			}else{
+				subject=request.slots["subject"];
 				var content = subject.toString();
 				response.card({
 					type:"Simple",
