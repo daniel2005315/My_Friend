@@ -4,6 +4,9 @@ module.change_code = 1;
 
 var alexa = require( 'alexa-app' );
 var app = new alexa.app( 'my_friend' );
+// server-side tools for processing
+var sentiment_Analyser = require.main.require('./process/sAnalyse.js');
+var entityClassifier = require.main.require('./process/entityTrain.js');
 
 
 // A few default intents to be handled
@@ -73,7 +76,7 @@ app.intent("AMAZON.CancelIntent", {
 // TODO: For checking if the code is updated
 app.intent("TestIntent",
 	function(request,response){
-		response.say("Greetings from Jarvis. Current version is beta one point zero");
+		response.say("Greetings from Jarvis. Current version is beta one point two");
 	}
 );
 
@@ -84,21 +87,8 @@ app.intent("GreetingIntent",
 );
 
 
-// Testing, hard coded playng music
-app.intent("WelcomeMusicIntent", {
-  // Try specifying nothing
-  /*
-    "slots": {
-      "searchPhrase": "SearchItem"
-    },
-    "utterances": [
-      "find {-|searchPhrase}",
-  		"Google about {-|searchPhrase}",
-  		"tell me about {-|searchPhrase}",
-  		"I want to know about {-|searchPhrase}"
-    ]
-    */
-  },
+// TODO:
+app.intent("WelcomeMusicIntent", {},
   function(request,response) {
 		// Get user's
     response.say("Here's some welcoming music!");
@@ -122,7 +112,6 @@ app.intent("WelcomeMusicIntent", {
 
 // TODO: Handle the player object
 // Play music
-
 app.intent("MusicIntent", {
     "slots": {
       "MusicType": "AMAZON.Genre",
@@ -143,68 +132,169 @@ app.intent("MusicIntent", {
 
 
 // Intent that train your friend to know more about you
+// ShareIntent is a wrapper that redirects the user to specific intents for handling different topics
+// Redirects to:
+// ShareMusicIntent (For music related)
+// ShareMovieIntent (For movies related)
+// ShareWorkIntent  (For work related)
+// ... others are work in process
 app.intent("ShareIntent",{
-	"dialog":{
-		type:"delegate"
-	},
-	"slots":{
-		"userInfo": "UserInfo"
+		"slots":{
+			"userInfo": "UserInfo"
+		}
+	},function(request, response) {
+
+			var clarify = "What would you like to talk about?";
+			var reprompt = "What is it about?"
+	    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
+	    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
 	}
+);
 
-},
-	  function(request, response) {
-			// update the status of the dialog model
-			var dialogState=request.dialogState;
-			console.log(dialogState);
-			console.log("Get passed");
+app.intent("ShareMusicIntent", {
+    "slots": {
+      "songName": "AMAZON.MusicRecording",
+      "musicGenre": "AMAZON.Genre",
+			"musician": "AMAZON.MusicGroup",
+			"preference": "PreferencePhrase"
+    }
+  }
+  ,
+  function(request,response) {
+		// testing slot values
+		var song = request.slot('songName'); 	//    3
+    var genre = request.slot('musicGenre'); //  5
+		var musician = request.slot('musician'); // 7
+		var preference=request.slot('preference');
 
-			if(dialogState=="STARTED"){
-				var content="The card should be shown, and dialog starts\nWith the dialog state now as: "+dialogState;
-				response.card({
-					type:"Simple",
-					title:"Starting a Dialog",
-					content: content
-				});
-				response.say("Dialog started. Tell me more");
-			}else if(dialogState=="IN_PROGRESS"){
-				var content="dialog in process\nWith the dialog state now as: "+dialogState;
-				response.card({
-					type:"Simple",
-					title:"During a Dialog",
-					content: content
-				});
-				response.say("Tell me.");
-				response.shouldEndSession(false);
-			}else if(dialogState=="COMPLETED"){
-				var slot = request.slot('userInfo');
-				var content="dialog ended\nWith the dialog state now as: "+dialogState+"\nslot value: "+slot;
-				response.card({
-					type:"Simple",
-					title:"Ending a Dialog",
-					content: content
-				});
-				response.say("Dialog Ended.");
-				response.shouldEndSession(true);
-			}else{
-				// TODO: Currently the intent just falls into
-				var slot = request.slot('userInfo');
-				var content="A dialog should have started? current state: "+dialogState+"\nslot value: "+slot;
-				response.card({
-					type:"Simple",
-					title:"General case before dialog",
-					content: content
-				});
-				response.say("Tell me more.");
+		// Get the dialogState (DONE)
+		var dialogState = request.data.request.dialogState;
+		if(dialogState==null||dialogState!="COMPLETED"){
+			var check=checkMusicSlots(song,genre,musician);
+			if(check==0){
+				response.say("Go on");
 				response.shouldEndSession(false);
 			}
-		});
-			//response.directive(directive);
-			/*
-			// return the Dialog object
-Dialog request.getDialog()
+			if(check==3){
+				//console.log(request.directive());
+				var dialog = [{
+						"type": "Dialog.ElicitSlot",
+						"slotToElicit": "genre",
+				}];
+				// TODO: Set the custom directives
+				response.response.response.directives=dialog;
+				console.log(response.response.response.directives);
+				console.log(response);
+				var result=entityClassifier.classify(song);
+				console.log(result);
+				var content = "Classifier got =>"+result;
+				response.shouldEndSession(false);
+				var speech="Isn't that a "+result+" song?";
+				response.say(speech);
+				response.card({
+					type:"Simple",
+					title:"Got song name",
+					content: content
+				});
+			}
+			if(check==5){
+				// got the genre
+				var dialog = [{
+						"type": "Dialog.ElicitSlot",
+						"slotToElicit": "preference",
+				}];
+				// TODO: Set the custom directives
+				response.response.response.directives=dialog;
+				console.log(response.response.response.directives);
+				console.log(response);
+				response.shouldEndSession(false);
+				var speech="Do you like"+genre+" music?";
+				response.say(speech);
+				var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
+				response.card({
+					type:"Simple",
+					title:"Got Genre",
+					content: content
+				});
+			}
+			if(check==7){
+				// got the musician
+				var dialog = [{
+						"type": "Dialog.ElicitSlot",
+						"slotToElicit": "preference",
+				}];
+				var speech="Do you like them?";
+				response.shouldEndSession(false);
+				var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
+				response.card({
+					type:"Simple",
+					title:"Got Genre",
+					content: content
+				});
+			}
+			if(check>=8){
+				// got multiple slots
+				if(preference!=null){
+					var score = sentiment_Analyser.getScore(preference);
+					var sentiment="";
+					if(score>0)
+						sentiment="like";
+					else {
+						sentiment="don't like"
+					}
+					var speech="I know that you"+sentiment+"it";
+					response.say(speech);
+					response.shouldEndSession(true);
+				}else{
+					var dialog = [{
+							"type": "Dialog.ElicitSlot",
+							"slotToElicit": "preference",
+					}];
+					response.response.response.directives=dialog;
+					response.shouldEndSession(false);
+					var speech="Do you like it?";
+					response.say(speech);
+				}
+				var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
+				response.card({
+					type:"Simple",
+					title:"Got Genre",
+					content: content
+				});
+			}
 
-// TODO: Testing intent to work with dialog
+		}else {
+			var content="song= "+song+"\nGenre: "+genre+"\nmusician:"+musician;
+				response.card({
+					type:"Simple",
+					title:"Intent end",
+					content: content
+				});
+				response.say("Thanks for sharing, ");
+		}
+	}
+);
+
+/* Template for ElicitSlot directive
+{
+  "version": "1.0",
+  "sessionAttributes": {},
+  "response": {
+    "outputSpeech": {
+      "type": "PlainText",
+      "text": "From where did you want to start your trip?"
+    },
+    "shouldEndSession": false,
+    "directives": [
+      {
+        "type": "Dialog.ElicitSlot",
+        "slotToElicit": "fromCity",
+      }
+    ]
+  }
+}
 */
+// TODO: Testing intent to work with dialog
 app.intent("DialogTestIntent", {
 		"dialog":{
 			type:"delegate"
@@ -222,7 +312,7 @@ app.intent("DialogTestIntent", {
     var music_genre = request.slot('music_genre');
 		var general_info = request.slot('UserInfo');
 
-		// TODO Try accessing the info
+		// TODO To get the dialogState (DONE)
 		var dialogState = request.data.request.dialogState;
 		if(dialogState==null||dialogState!="COMPLETED"){
 			console.log(request.type());
@@ -248,20 +338,17 @@ app.intent("DialogTestIntent", {
 		}
 	}
 );
-/*
-// return the intent's dialogState
-String request.dialogState
 
-// check if the intent's dialog is STARTED
-Boolean dialog.isStarted()
-
-// check if the intent's dialog is IN_PROGRESS
-Boolean dialog.isInProgress()
-
-// check if the intent's dialog is COMPLETED
-Boolean dialog.isCompleted()
-
-*/
-
-
+// TODO: utility function
+// Checking music slots, the sum of values represent which slots are present
+function checkMusicSlots(song,genre,musician){
+	var check=0;
+	if(song!=null)
+		check+=3;
+	if(genre!=null)
+		check+=5;
+	if(musician!=null)
+		check+=7;
+	return check;
+}
 module.exports = app;
