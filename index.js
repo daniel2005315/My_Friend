@@ -156,6 +156,11 @@ app.intent("ShareIntent",{
 		    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
 		    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
 			}else{
+				response.card({
+					type:"Simple",
+					title:"triggered",
+					content: subject
+				});
 				if(subject==="Music")
 				{
 					var directive=[{"updatedIntent": {
