@@ -157,7 +157,7 @@ app.intent("ShareIntent",{
 		    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
 			}else{
 				var temp=request.data.request;
-				var content = temp.toString();
+				var content = JSON.stringnify(temp);
 				response.card({
 					type:"Simple",
 					title:"triggered",
