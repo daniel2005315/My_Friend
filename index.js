@@ -166,7 +166,7 @@ app.intent("ShareIntent",{
 					title:"triggered",
 					content: slot
 				});
-				if(status==="MUSIC")
+				if(id==="MUSIC")
 				{
 					var directive=[{"updatedIntent": {
 				    "name": "ShareMusicIntent"
