@@ -165,19 +165,21 @@ app.intent("ShareIntent",{
 				var content = JSON.stringify(request);
 				var slot = request.data.request.intent.slots.subject;
 				var matchedValue = slot.resolutions.resolutionsPerAuthority[0].values;
-				// If there is no match, the value will be null
-				content = matchedValue;
-				//var status = request.data.request.intent.slots.subject.resolutions.resolutionsPerAuthority.values.value.id;
-				response.card({
-					type:"Simple",
-					title:"triggered",
-					content: content
-				});
+
 
 				if(matchedValue==null){
 					response.say("Sorry, I'm not knowledgeble enough in that area.");
 					response.shouldEndSession(true);
 				}else{
+					// If there is no match, the value will be null
+					content = matchedValue;
+					//var status = request.data.request.intent.slots.subject.resolutions.resolutionsPerAuthority.values.value.id;
+					response.card({
+						type:"Simple",
+						title:"triggered",
+						content: content
+					});
+					
 					// There is a match
 					var id = matchedValue[0].values[0].value.id;
 					if(id==="MUSIC")
