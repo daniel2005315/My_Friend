@@ -164,24 +164,27 @@ app.intent("ShareIntent",{
 			}else{
 				var content = JSON.stringify(request);
 				var slot = request.data.request.intent.slots.subject;
-				var matchedValue = slot.resolutions.resolutionsPerAuthority[0].values;
+				var resolutionArray = slot.resolutions.resolutionsPerAuthority;
+				var resolution=resolutionArray[0];
+				var valueArray = resolution.values;
+				if(valueArray==null){
 
 
-				if(matchedValue==null){
 					response.say("Sorry, I'm not knowledgeble enough in that area.");
 					response.shouldEndSession(true);
 				}else{
+					var entry = valueArray[0];
+					console.log(entry);
+					var id = entry.value.id;
 					// If there is no match, the value will be null
-					content = matchedValue;
+					content = id;
 					//var status = request.data.request.intent.slots.subject.resolutions.resolutionsPerAuthority.values.value.id;
 					response.card({
 						type:"Simple",
 						title:"triggered",
 						content: content
 					});
-					
-					// There is a match
-					var id = matchedValue[0].values[0].value.id;
+
 					if(id==="MUSIC")
 					{
 						var directive=[{"updatedIntent": {
@@ -217,12 +220,14 @@ app.intent("ShareMusicIntent", {
 		// Get the dialogState (DONE)
 		var dialogState = request.data.request.dialogState;
 		if(dialogState==null||dialogState!="COMPLETED"){
+			console.log("*****************ShareMusic Dialog NOT COMPLETED");
 			var check=checkMusicSlots(song,genre,musician);
 			if(check==0){
 				response.say("Go on");
 				response.shouldEndSession(false);
 			}
 			if(check==3){
+				console.log("*** song name");
 				//console.log(request.directive());
 				var dialog = [{
 						"type": "Dialog.ElicitSlot",
@@ -245,6 +250,7 @@ app.intent("ShareMusicIntent", {
 				});
 			}
 			if(check==5){
+				console.log("*** genre");
 				// got the genre
 				var dialog = [{
 						"type": "Dialog.ElicitSlot",
@@ -265,6 +271,7 @@ app.intent("ShareMusicIntent", {
 				});
 			}
 			if(check==7){
+				console.log("*** musician");
 				// got the musician
 				var dialog = [{
 						"type": "Dialog.ElicitSlot",
@@ -280,6 +287,7 @@ app.intent("ShareMusicIntent", {
 				});
 			}
 			if(check>=8){
+				console.log("*** multiple slots received");
 				// got multiple slots
 				if(preference!=null){
 					var score = sentiment_Analyser.getScore(preference);
