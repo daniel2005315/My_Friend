@@ -187,12 +187,16 @@ app.intent("ShareIntent",{
 
 					if(id==="MUSIC")
 					{
+						// try using cbFunction
+						shareMusicCB(request,response);
+						/*
 						var directive=[{"updatedIntent": {
 							"name": "ShareMusicIntent"
 						}
 					}];
 					response.response.response.directives=directive;
 					response.shouldEndSession(true);
+					*/
 					console.log(JSON.stringify(response));
 					}
 				}
@@ -210,125 +214,129 @@ app.intent("ShareMusicIntent", {
 			"musician": "AMAZON.MusicGroup",
 			"preference": "PreferencePhrase"
     }
-  },
-  function(request,response) {
-		// testing slot values
-		var song = request.slot('songName'); 	//    3
-    var genre = request.slot('musicGenre'); //  5
-		var musician = request.slot('musician'); // 7
-		var preference=request.slot('preference');
-
-		// Get the dialogState (DONE)
-		var dialogState = request.data.request.dialogState;
-		if(dialogState==null||dialogState!="COMPLETED"){
-			console.log("*****************ShareMusic Dialog NOT COMPLETED");
-			var check=checkMusicSlots(song,genre,musician);
-			if(check==0){
-				response.say("Go on");
-				response.shouldEndSession(false);
-			}
-			if(check==3){
-				console.log("*** song name");
-				//console.log(request.directive());
-				var dialog = [{
-						"type": "Dialog.ElicitSlot",
-						"slotToElicit": "genre",
-				}];
-				// TODO: Set the custom directives
-				response.response.response.directives=dialog;
-				console.log(response.response.response.directives);
-				console.log(response);
-				var result=entityClassifier.classify(song);
-				console.log(result);
-				var content = "Classifier got =>"+result;
-				response.shouldEndSession(false);
-				var speech="Isn't that a "+result+" song?";
-				response.say(speech);
-				response.card({
-					type:"Simple",
-					title:"Got song name",
-					content: content
-				});
-			}
-			if(check==5){
-				console.log("*** genre");
-				// got the genre
-				var dialog = [{
-						"type": "Dialog.ElicitSlot",
-						"slotToElicit": "preference",
-				}];
-				// TODO: Set the custom directives
-				response.response.response.directives=dialog;
-				console.log(response.response.response.directives);
-				console.log(response);
-				response.shouldEndSession(false);
-				var speech="Do you like"+genre+" music?";
-				response.say(speech);
-				var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
-				response.card({
-					type:"Simple",
-					title:"Got Genre",
-					content: content
-				});
-			}
-			if(check==7){
-				console.log("*** musician");
-				// got the musician
-				var dialog = [{
-						"type": "Dialog.ElicitSlot",
-						"slotToElicit": "preference",
-				}];
-				var speech="Do you like them?";
-				response.shouldEndSession(false);
-				var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
-				response.card({
-					type:"Simple",
-					title:"Got Genre",
-					content: content
-				});
-			}
-			if(check>=8){
-				console.log("*** multiple slots received");
-				// got multiple slots
-				if(preference!=null){
-					var score = sentiment_Analyser.getScore(preference);
-					var sentiment="";
-					if(score>0)
-						sentiment="like";
-					else {
-						sentiment="don't like"
-					}
-					var speech="I know that you"+sentiment+"it";
-					response.say(speech);
-					response.shouldEndSession(true);
-				}else{
-					var dialog = [{
-							"type": "Dialog.ElicitSlot",
-							"slotToElicit": "preference",
-					}];
-					response.response.response.directives=dialog;
-					response.shouldEndSession(false);
-					var speech="Do you like it?";
-					response.say(speech);
-				}
-				var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
-				response.card({
-					type:"Simple",
-					title:"Got Genre",
-					content: content
-				});
-			}
-		}else {
-			var content="song= "+song+"\nGenre: "+genre+"\nmusician:"+musician;
-				response.card({
-					type:"Simple",
-					title:"Intent end",
-					content: content
-				});
-				response.say("Thanks for sharing, ");
-		}
+  },function(request,response){
+		shareMusicCB(request,response);
 	}
 );
+
+// ShareMusicIntent Callback
+function shareMusicCB(request,response) {
+	// testing slot values
+	var song = request.slot('songName'); 	//    3
+	var genre = request.slot('musicGenre'); //  5
+	var musician = request.slot('musician'); // 7
+	var preference=request.slot('preference');
+
+	// Get the dialogState (DONE)
+	var dialogState = request.data.request.dialogState;
+	if(dialogState==null||dialogState!="COMPLETED"){
+		console.log("*****************ShareMusic Dialog NOT COMPLETED");
+		var check=checkMusicSlots(song,genre,musician);
+		if(check==0){
+			response.say("Go on");
+			response.shouldEndSession(false);
+		}
+		if(check==3){
+			console.log("*** song name");
+			//console.log(request.directive());
+			var dialog = [{
+					"type": "Dialog.ElicitSlot",
+					"slotToElicit": "genre",
+			}];
+			// TODO: Set the custom directives
+			response.response.response.directives=dialog;
+			console.log(response.response.response.directives);
+			console.log(response);
+			var result=entityClassifier.classify(song);
+			console.log(result);
+			var content = "Classifier got =>"+result;
+			response.shouldEndSession(false);
+			var speech="Isn't that a "+result+" song?";
+			response.say(speech);
+			response.card({
+				type:"Simple",
+				title:"Got song name",
+				content: content
+			});
+		}
+		if(check==5){
+			console.log("*** genre");
+			// got the genre
+			var dialog = [{
+					"type": "Dialog.ElicitSlot",
+					"slotToElicit": "preference",
+			}];
+			// TODO: Set the custom directives
+			response.response.response.directives=dialog;
+			console.log(response.response.response.directives);
+			console.log(response);
+			response.shouldEndSession(false);
+			var speech="Do you like"+genre+" music?";
+			response.say(speech);
+			var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
+			response.card({
+				type:"Simple",
+				title:"Got Genre",
+				content: content
+			});
+		}
+		if(check==7){
+			console.log("*** musician");
+			// got the musician
+			var dialog = [{
+					"type": "Dialog.ElicitSlot",
+					"slotToElicit": "preference",
+			}];
+			var speech="Do you like them?";
+			response.shouldEndSession(false);
+			var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
+			response.card({
+				type:"Simple",
+				title:"Got Genre",
+				content: content
+			});
+		}
+		if(check>=8){
+			console.log("*** multiple slots received");
+			// got multiple slots
+			if(preference!=null){
+				var score = sentiment_Analyser.getScore(preference);
+				var sentiment="";
+				if(score>0)
+					sentiment="like";
+				else {
+					sentiment="don't like"
+				}
+				var speech="I know that you"+sentiment+"it";
+				response.say(speech);
+				response.shouldEndSession(true);
+			}else{
+				var dialog = [{
+						"type": "Dialog.ElicitSlot",
+						"slotToElicit": "preference",
+				}];
+				response.response.response.directives=dialog;
+				response.shouldEndSession(false);
+				var speech="Do you like it?";
+				response.say(speech);
+			}
+			var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
+			response.card({
+				type:"Simple",
+				title:"Got Genre",
+				content: content
+			});
+		}
+	}else {
+		var content="song= "+song+"\nGenre: "+genre+"\nmusician:"+musician;
+			response.card({
+				type:"Simple",
+				title:"Intent end",
+				content: content
+			});
+			response.say("Thanks for sharing, ");
+	}
+}
 
 /* Template for ElicitSlot directive
 {
