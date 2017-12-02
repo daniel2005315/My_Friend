@@ -192,7 +192,8 @@ app.intent("ShareIntent",{
 						}
 					}];
 					response.response.response.directives=directive;
-					response.shouldEndSession(false);
+					response.shouldEndSession(true);
+					console.log(JSON.stringify(response));
 					}
 				}
 
