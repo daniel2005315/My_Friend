@@ -19,6 +19,12 @@ app.error = function( exception, request, response ) {
 	console.log(request);
 	console.log(response);
 	response.say( 'Sorry an error occured ');
+	var content = exception;
+	response.card({
+		type:"Simple",
+		title:"Error",
+		content: content
+	});
 };
 
 // help messages
@@ -158,23 +164,35 @@ app.intent("ShareIntent",{
 			}else{
 				var content = JSON.stringify(request);
 				var slot = request.data.request.intent.slots.subject;
-				var id = slot.resolutions.resolutionsPerAuthority[].values[].value.id;
-				content = JSON.stringify(slot);
+				var matchedValue = slot.resolutions.resolutionsPerAuthority[0].values;
+				// If there is no match, the value will be null
+				content = matchedValue;
 				//var status = request.data.request.intent.slots.subject.resolutions.resolutionsPerAuthority.values.value.id;
 				response.card({
 					type:"Simple",
 					title:"triggered",
-					content: slot
+					content: content
 				});
-				if(id==="MUSIC")
-				{
-					var directive=[{"updatedIntent": {
-				    "name": "ShareMusicIntent"
-				  }
-				}];
-				response.response.response.directives=directive;
-				response.shouldEndSession(false);
+
+				if(matchedValue==null){
+					response.say("Sorry, I'm not knowledgeble enough in that area.");
+					response.shouldEndSession(true);
+				}else{
+					// There is a match
+					var id = matchedValue[0].values[0].value.id;
+					if(id==="MUSIC")
+					{
+						var directive=[{"updatedIntent": {
+							"name": "ShareMusicIntent"
+						}
+					}];
+					response.response.response.directives=directive;
+					response.shouldEndSession(false);
+					}
 				}
+
+
+
 			}
 	}
 );
@@ -186,8 +204,7 @@ app.intent("ShareMusicIntent", {
 			"musician": "AMAZON.MusicGroup",
 			"preference": "PreferencePhrase"
     }
-  }
-  ,
+  },
   function(request,response) {
 		// testing slot values
 		var song = request.slot('songName'); 	//    3
@@ -290,7 +307,6 @@ app.intent("ShareMusicIntent", {
 					content: content
 				});
 			}
-
 		}else {
 			var content="song= "+song+"\nGenre: "+genre+"\nmusician:"+musician;
 				response.card({
