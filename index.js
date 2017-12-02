@@ -318,7 +318,7 @@ function shareMusicCB(request,response) {
 				else {
 					sentiment="don't like"
 				}
-				var speech="I know that you"+sentiment+"it";
+				var speech="I know that you "+sentiment+" it";
 				response.say(speech);
 				response.shouldEndSession(true);
 
