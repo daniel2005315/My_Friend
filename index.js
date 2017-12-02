@@ -168,6 +168,22 @@ app.intent("ShareIntent",{
 				var resolution=resolutionArray[0];
 				var valueArray = resolution.values;
 				if(valueArray==null){
+					var dialog = [{
+							"type": "Dialog.ElicitSlot",
+							"slotToElicit": "subject",
+							"updatedIntent": {
+						    "name": "ShareIntent",
+						    "confirmationStatus": "NONE",
+						    "slots": {
+						      "subject": {
+						        "name": "subject",
+						        "value": null,
+						        "confirmationStatus": "NONE"
+						      }
+						    }
+						  }
+					}];
+					response.response.response.directives=dialog;
 					response.say("I'm not sure what it is, what is it related to?");
 					response.shouldEndSession(false);
 				}else{
