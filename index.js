@@ -168,10 +168,8 @@ app.intent("ShareIntent",{
 				var resolution=resolutionArray[0];
 				var valueArray = resolution.values;
 				if(valueArray==null){
-
-
-					response.say("Sorry, I'm not knowledgeble enough in that area.");
-					response.shouldEndSession(true);
+					response.say("I'm not sure what it is, what is it related to?");
+					response.shouldEndSession(false);
 				}else{
 					var entry = valueArray[0];
 					console.log(entry);
