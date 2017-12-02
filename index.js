@@ -219,6 +219,7 @@ app.intent("ShareMusicIntent", {
 	}
 );
 
+// WORKS
 // ShareMusicIntent Callback
 function shareMusicCB(request,response) {
 	// testing slot values
@@ -235,6 +236,14 @@ function shareMusicCB(request,response) {
 		if(check==0){
 			response.say("Go on");
 			response.shouldEndSession(false);
+			/*
+			var dialog = [{
+					"type": "Dialog.ElicitSlot",
+					"slotToElicit": "preference",
+			}];
+			// TODO: Set the custom directives
+			response.response.response.directives=dialog;
+			*/
 		}
 		if(check==3){
 			console.log("*** song name");
@@ -282,19 +291,39 @@ function shareMusicCB(request,response) {
 		}
 		if(check==7){
 			console.log("*** musician");
-			// got the musician
-			var dialog = [{
-					"type": "Dialog.ElicitSlot",
-					"slotToElicit": "preference",
-			}];
-			var speech="Do you like them?";
-			response.shouldEndSession(false);
-			var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
-			response.card({
-				type:"Simple",
-				title:"Got Genre",
-				content: content
-			});
+			// Check preference
+			if(preference==null){
+				// got the musician
+
+				// basic handling here
+				var dialog = [{
+						"type": "Dialog.ElicitSlot",
+						"slotToElicit": "preference",
+				}];
+				var speech="Do you like them?";
+				response.shouldEndSession(false);
+				var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
+				response.card({
+					type:"Simple",
+					title:"Got Genre",
+					content: content
+				});
+				response.say(speech);
+			}else{
+				console.log("**analysisng sentiment");
+				var score = sentiment_Analyser.getScore(preference);
+				var sentiment="";
+				if(score>0)
+					sentiment="like";
+				else {
+					sentiment="don't like"
+				}
+				var speech="I know that you"+sentiment+"it";
+				response.say(speech);
+				response.shouldEndSession(true);
+
+			}
+
 		}
 		if(check>=8){
 			console.log("*** multiple slots received");
