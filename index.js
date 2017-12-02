@@ -179,6 +179,14 @@ app.intent("ShareIntent",{
 						        "name": "subject",
 						        "value": null,
 						        "confirmationStatus": "NONE"
+						      },
+									"shareAction": {
+						        "name": "shareAction",
+						        "confirmationStatus": "NONE"
+						      },
+									"preference": {
+						        "name": "preference",
+						        "confirmationStatus": "NONE"
 						      }
 						    }
 						  }
