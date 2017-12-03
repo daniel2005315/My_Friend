@@ -238,6 +238,7 @@ app.intent("ShareIntent",{
 					{
 						// call back for handling music
 						//shareMusicCB(request,response);
+						console.log(request);
 						return shareMusicAsync(request).then(function(result){
 							console.log(result);
 							if(result.dialog!=null)
@@ -286,6 +287,10 @@ function shareMusicAsync(request){
 		var dialogState = request.data.request.dialogState;
 		if(dialogState==null||dialogState!="COMPLETED"){
 			console.log("*****************ShareMusic Dialog NOT COMPLETED");
+			console.log("song:"+song);
+			console.log("genre:"+genre);
+			console.log("musician:"+musician);
+			console.log("preference:"+preference);
 			var check=checkMusicSlots(song,genre,musician);
 			if(check==0){
 				//response.say("Go on");
@@ -304,7 +309,8 @@ function shareMusicAsync(request){
 				var result={
 					"dialog": dialog,
 					"speech": speech,
-					"sessionEnd": sessionEnd
+					"sessionEnd": sessionEnd,
+					"card":card
 				}
 				// pass promise back
 				resolve(result);
