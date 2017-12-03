@@ -297,17 +297,13 @@ function shareMusicAsync(request){
 				//response.shouldEndSession(false);
 				var speech = "Go on";
 				var sessionEnd = false;
-				var dialog = [{
-						"type": "Dialog.ElicitSlot",
-						"slotToElicit": "preference",
-				}];
 				var card={
 					type:"Simple",
 					title:"No slot values",
-					content: content
+					content: ""
 				};
 				var result={
-					"dialog": dialog,
+
 					"speech": speech,
 					"sessionEnd": sessionEnd,
 					"card":card
