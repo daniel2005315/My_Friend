@@ -93,6 +93,13 @@ app.intent("TestIntent",
 	}
 );
 
+// to end session
+app.intent("ThankIntent",
+	function(request,response){
+		response.say("You're welcome.");
+		response.shouldEndSession(true);
+	})
+
 app.intent("GreetingIntent",
 	function(request,response){
 		response.say("Greetings from Jarvis. System is standing by.");
