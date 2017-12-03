@@ -12,7 +12,7 @@ var database = require.main.require('./db/database.js');
 
 // A few default intents to be handled
 app.launch( function( request, response ) {
-	response.say( 'Your friend is here!' ).shouldEndSession( true );
+	response.say( 'Your friend is here!' ).shouldEndSession( false );
 } );
 
 app.error = function( exception, request, response ) {
@@ -106,6 +106,7 @@ app.intent("WhoIntent", function(request,response){
 		var name =result.username;
 		console.log(name);
 		response.say("You are "+name);
+		response.shouldEndSession(false);
 	});
 });
 
