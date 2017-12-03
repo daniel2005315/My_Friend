@@ -84,16 +84,17 @@ app.intent("AMAZON.CancelIntent", {
 // TODO: Connect to database
 app.intent("TestIntent",
 	function(request,response){
+		var result;
 		database.connect(function(status){
-			var result;
+
 			if(status)
 				result='online';
 			else {
 				result='offline';
 			}
-			response.say("Greetings from Jarvis. Current version is beta one point three. Database conntection status is "+result);
-		})
 
+		});
+		response.say("Greetings from Jarvis. Current version is beta one point three. Database conntection status is "+result);
 	}
 );
 
