@@ -7,6 +7,7 @@ var app = new alexa.app( 'my_friend' );
 // server-side tools for processing
 var sentiment_Analyser = require.main.require('./process/sAnalyse.js');
 var entityClassifier = require.main.require('./process/entityTrain.js');
+var database = require.main.require('./db/database.js');
 
 
 // A few default intents to be handled
@@ -80,9 +81,19 @@ app.intent("AMAZON.CancelIntent", {
 // First line is Intent's name
 
 // TODO: For checking if the code is updated
+// TODO: Connect to database
 app.intent("TestIntent",
 	function(request,response){
-		response.say("Greetings from Jarvis. Current version is beta one point two");
+		database.connect(function(status){
+			var result;
+			if(status)
+				result='online';
+			else {
+				result='offline';
+			}
+			response.say("Greetings from Jarvis. Current version is beta one point three. Database conntection status is "+result);
+		})
+
 	}
 );
 
@@ -93,13 +104,16 @@ app.intent("GreetingIntent",
 );
 
 
-// TODO:
+// TODO:  Connect it to database so the result is based on database value
 app.intent("WelcomeMusicIntent", {},
   function(request,response) {
 		// Get user's
     response.say("Here's some welcoming music!");
 		// TODO:
 		// Fetch for user's favourite song lately
+
+		// database call for user's favourite song
+
 		// put into the song variable
 		var song="floating.mp3";
 
@@ -209,22 +223,11 @@ app.intent("ShareIntent",{
 
 					if(id==="MUSIC")
 					{
-						// try using cbFunction
+						// call back for handling music
 						shareMusicCB(request,response);
-						/*
-						var directive=[{"updatedIntent": {
-							"name": "ShareMusicIntent"
-						}
-					}];
-					response.response.response.directives=directive;
-					response.shouldEndSession(true);
-					*/
 					console.log(JSON.stringify(response));
 					}
 				}
-
-
-
 			}
 	}
 );
