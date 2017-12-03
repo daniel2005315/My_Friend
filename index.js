@@ -132,7 +132,7 @@ app.intent("PickMusicIntent", {},
 			var content=song;
 			response.card({
 				type:"Simple",
-				title:"Your friend picked this song for you",
+				title:"I picked this song for you",
 				content: content
 			});
 			// Start the play directive
@@ -230,15 +230,23 @@ app.intent("ShareIntent",{
 					//var status = request.data.request.intent.slots.subject.resolutions.resolutionsPerAuthority.values.value.id;
 					response.card({
 						type:"Simple",
-						title:"triggered",
+						title:"Request received",
 						content: content
 					});
 
 					if(id==="MUSIC")
 					{
 						// call back for handling music
-						shareMusicCB(request,response);
-					console.log(JSON.stringify(response));
+						//shareMusicCB(request,response);
+						return shareMusicAsync(request).then(function(result){
+							console.log(result);
+							if(result.dialog!=null)
+								response.response.response.directives=result.dialog;
+							if(result.card!=null)
+								response.card(result.card);
+							response.say(result.speech);
+							response.shouldEndSession(result.sessionEnd);
+						});
 					}
 				}
 			}
@@ -253,12 +261,20 @@ app.intent("ShareMusicIntent", {
 			"preference": "PreferencePhrase"
     }
   },function(request,response){
-		shareMusicCB(request,response);
+		return shareMusicAsync(request).then(function(result){
+			console.log(result);
+			if(result.dialog!=null)
+				response.response.response.directives=result.dialog;
+			if(result.card!=null)
+				response.card(result.card);
+			response.say(result.speech);
+			response.shouldEndSession(result.sessionEnd);
+		});
 	}
 );
 
 
-/*
+
 // Testing .... Async handler
 function shareMusicAsync(request){
 	return new Promise((resolve,reject)=>{
@@ -267,13 +283,255 @@ function shareMusicAsync(request){
 		var genre = request.slot('musicGenre'); //  5
 		var musician = request.slot('musician'); // 7
 		var preference=request.slot('preference');
+		var dialogState = request.data.request.dialogState;
+		if(dialogState==null||dialogState!="COMPLETED"){
+			console.log("*****************ShareMusic Dialog NOT COMPLETED");
+			var check=checkMusicSlots(song,genre,musician);
+			if(check==0){
+				//response.say("Go on");
+				//response.shouldEndSession(false);
+				var speech = "Go on";
+				var sessionEnd = false;
+				var dialog = [{
+						"type": "Dialog.ElicitSlot",
+						"slotToElicit": "preference",
+				}];
+				var card={
+					type:"Simple",
+					title:"No slot values",
+					content: content
+				};
+				var result={
+					"dialog": dialog,
+					"speech": speech,
+					"sessionEnd": sessionEnd
+				}
+				// pass promise back
+				resolve(result);
+			}
+			if(check==3){
+				console.log("*** song name");
+				if(preference==null){
+					//console.log(request.directive());
+					var dialog = [{
+							"type": "Dialog.ElicitSlot",
+							"slotToElicit": "musicGenre",
+					}];
+					// TODO: Set the custom directives
+					response.response.response.directives=dialog;
+					console.log(response.response.response.directives);
+					console.log(response);
+					var result=entityClassifier.classify(song);
+					console.log(result);
+					var content = "Classifier got =>"+result;
+					var speech="Isn't that a "+result+" song?";
+					var card={
+						type:"Simple",
+						title:"Got song name",
+						content: content
+					};
+
+					var sessionEnd = false;
+					var result={
+						"dialog": dialog,
+						"speech": speech,
+						"sessionEnd": sessionEnd,
+						"card": card
+					}
+					// pass promise back
+					resolve(result);
+
+				}else{
+					console.log("**analysisng sentiment");
+					var score = sentiment_Analyser.getScore(preference);
+					// TODO: update score in DB
+					// set new favourite in DB
+					var sentiment="";
+					if(score>0)
+						sentiment="like";
+					if(score<0){
+						sentiment="don't like";
+					}
+					if(score==0)
+						sentiment="are fine";
+					var speech="I know that you "+sentiment+" it. I got it now for you.";
+					var sessionEnd = true;
+					var content ="You "+sentiment+" the song: "+song+"\n Echo got your preference value: "+preference;
+					var card={
+						type:"Simple",
+						title:"Sentiment about a song",
+						content: content
+					};
+
+					var result={
+						"speech": speech,
+						"sessionEnd": sessionEnd,
+						"card": card
+					}
+					// pass promise back
+					resolve(result);
+
+				}
+			}
+			if(check==5){
+				console.log("*** genre");
+				if(preference==null){
+					// got the genre
+					var dialog = [{
+							"type": "Dialog.ElicitSlot",
+							"slotToElicit": "preference",
+					}];
+					var sessionEnd=false;
+					var speech="Do you like"+genre+" music?";
+					var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
+					var card={
+						type:"Simple",
+						title:"Got Genre",
+						content: content
+					};
+
+					var result={
+						"dialog": dialog,
+						"speech": speech,
+						"sessionEnd": sessionEnd,
+						"card": card
+					}
+					// pass promise back
+					resolve(result);
+
+				}else{
+					console.log("**analysisng sentiment");
+					var score = sentiment_Analyser.getScore(preference);
+					// update score in DB
+					// set new favourite in DB
+					var sentiment="";
+					if(score>0)
+						sentiment="like";
+					else {
+						sentiment="don't like"
+					}
+					var speech="I know that you "+sentiment+" it";
+					var sessionEnd=true;
+					var result={
+						"speech": speech,
+						"sessionEnd": sessionEnd
+					}
+					// pass promise back
+					resolve(result);
+				}
+
+			}
+			if(check==7){
+				console.log("*** musician");
+				// Check preference
+				if(preference==null){
+					// got the musician
+
+					// basic handling here
+					var dialog = [{
+							"type": "Dialog.ElicitSlot",
+							"slotToElicit": "preference",
+					}];
+					var speech="Do you like them?";
+					var sessionEnd =false;
+					var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
+					var card={
+						type:"Simple",
+						title:"Got Genre",
+						content: content
+					};
+					var result={
+						"dialog": dialog,
+						"speech": speech,
+						"sessionEnd": sessionEnd,
+						"card": card
+					}
+					// pass promise back
+					resolve(result);
+				}else{
+					console.log("**analysisng sentiment");
+					var score = sentiment_Analyser.getScore(preference);
+					var sentiment="";
+					if(score>0)
+						sentiment="like";
+					else {
+						sentiment="don't like"
+					}
+					var speech="I know that you "+sentiment+" it";
+					var sessionEnd=true;
+					var result={
+						"speech": speech,
+						"sessionEnd": sessionEnd,
+					}
+					// pass promise back
+					resolve(result);
+
+				}
+
+			}
+			if(check>=8){
+				console.log("*** multiple slots received");
+				// got multiple slots
+				if(preference!=null){
+					var score = sentiment_Analyser.getScore(preference);
+					var sentiment="";
+					if(score>0)
+						sentiment="like";
+					else {
+						sentiment="don't like"
+					}
+					var speech="I know that you "+sentiment+" it";
+					var sessionEnd=true;
+					var result={
+						"speech": speech,
+						"sessionEnd": sessionEnd,
+					}
+					// pass promise back
+					resolve(result);
+
+				}else{
+					var dialog = [{
+							"type": "Dialog.ElicitSlot",
+							"slotToElicit": "preference",
+					}];
+					var speech="Do you like it?";
+					var sessionEnd=false;
+					var result={
+						"dialog": dialog,
+						"speech": speech,
+						"sessionEnd": sessionEnd
+					}
+					// pass promise back
+					resolve(result);
+
+				}
+			}
+		}else {
+			var content="song= "+song+"\nGenre: "+genre+"\nmusician:"+musician;
+				var card={
+					type:"Simple",
+					title:"Intent end",
+					content: content
+				};
+				var speech = "Thank you for your sharing";
+				var sessionEnd=true;
+				var result={
+					"speech": speech,
+					"sessionEnd": sessionEnd,
+					"card":card
+				}
+				// pass promise back
+				resolve(result);
+		}
 
 	});
 }
-*/
+
+// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 // WORKS
 // ShareMusicIntent Callback
-
+// Buggy VVV
+/*
 function shareMusicCB(request,response) {
 	// testing slot values
 	var song = request.slot('songName'); 	//    3
