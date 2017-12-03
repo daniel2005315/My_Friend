@@ -313,12 +313,20 @@ function shareMusicCB(request,response) {
 				var sentiment="";
 				if(score>0)
 					sentiment="like";
-				else {
-					sentiment="don't like"
+				if(score<0){
+					sentiment="don't like";
 				}
+				if(score==0)
+					sentiment="are fine";
 				var speech="I know that you "+sentiment+" it. I got it now for you.";
 				response.say(speech);
 				response.shouldEndSession(true);
+				var content ="You "+sentiment+" the song: "+song+"\n Echo got your preference value: "+preference;
+				response.card({
+					type:"Simple",
+					title:"Sentiment about a song",
+					content: content
+				});
 
 			}
 		}
