@@ -408,12 +408,14 @@ function shareMusicAsync(request){
 					else {
 						sentiment="don't like"
 					}
-					var speech="I know that you "+sentiment+" it";
+					var speech="I've got that down for you. I know that you "+sentiment+" it";
 					var sessionEnd=true;
 					var result={
 						"speech": speech,
 						"sessionEnd": sessionEnd
 					}
+					// update database async
+					database.update(genre);
 					// pass promise back
 					resolve(result);
 				}
