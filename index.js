@@ -302,8 +302,13 @@ app.intent("ShareMusicIntent", {
 function shareWorkAsync(request){
 	return new Promise((resolve,reject)=>{
 			var feel = request.slot('feeling');
+			console.log("***analysing sentiment");
+			var score = sentiment_Analyser.getScore(feel);
+
 			var speech = "I know you did not sleep last night. Relax and listen to some music.";
 			var sessionEnd=true;
+			// Card display for details
+			var content="Floating-Chillstep";
 			var card={
 				type:"Simple",
 				title:"I picked this song for you",
@@ -314,8 +319,7 @@ function shareWorkAsync(request){
 				"sessionEnd": sessionEnd,
 				"card":card
 			}
-			// Card display for details
-			var content="Floating-Chillstep";
+
 
 			// pass promise back
 			resolve(result);
