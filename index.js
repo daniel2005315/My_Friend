@@ -249,6 +249,30 @@ app.intent("ShareIntent",{
 							response.shouldEndSession(result.sessionEnd);
 						});
 					}
+					if(id==="WORK")
+					{
+						console.log(request);
+						return shareWorkAsync(request).then(function(result){
+							console.log(result);
+							if(result.dialog!=null)
+								response.response.response.directives=result.dialog;
+							if(result.card!=null)
+								response.card(result.card);
+							response.say(result.speech);
+							response.shouldEndSession(result.sessionEnd);
+
+							var url = "https://evening-savannah-89199.herokuapp.com/music/floating.mp3";
+							var stream={
+								"token": "90",
+								"url": url,
+								"offsetInMilliseconds": 0
+							}
+							console.log("playing: "+url);
+
+							// Start the play directive
+							response.audioPlayerPlayStream("REPLACE_ALL", stream)
+						});
+					}
 				}
 			}
 	}
@@ -274,9 +298,30 @@ app.intent("ShareMusicIntent", {
 	}
 );
 
+// Async Work handler
+function shareWorkAsync(request){
+	return new Promise((resolve,reject)=>{
+			var feel = request.slot('feeling');
+			var speech = "I know you did not sleep last night. Relax and listen to some music.";
+			var sessionEnd=true;
+			var card={
+				type:"Simple",
+				title:"I picked this song for you",
+				content: content
+			};
+			var result={
+				"speech": speech,
+				"sessionEnd": sessionEnd,
+				"card":card
+			}
+			// Card display for details
+			var content="Floating-Chillstep";
 
+			// pass promise back
+			resolve(result);
+}
 
-// Testing .... Async handler
+// Working
 function shareMusicAsync(request){
 	return new Promise((resolve,reject)=>{
 
