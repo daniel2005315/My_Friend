@@ -112,9 +112,9 @@ app.intent("WhoIntent", function(request,response){
 // TODO:  Connect it to database so the result is based on database value
 app.intent("PickMusicIntent", {},
   function(request,response) {
-		return database.find("favorite.song").then(function(song){
+		return database.find("favorite.music.song").then(function(song){
 			// Get user's
-	    response.say("Here's your favourte lately!");
+	    response.say("Here's your favourite lately!");
 			console.log(song);
 			console.log(song.song);
 			// TODO:
@@ -123,7 +123,7 @@ app.intent("PickMusicIntent", {},
 			// database call for user's favourite song
 
 			// put into the song variable
-			var song="Vincent-Don McLean.mp3";
+			var song="Vincent-Don_McLean.mp3";
 
 			// encoded the link for the song
 			var url = "https://evening-savannah-89199.herokuapp.com/music/"+song;
