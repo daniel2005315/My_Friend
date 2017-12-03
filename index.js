@@ -319,10 +319,6 @@ function shareMusicAsync(request){
 							"type": "Dialog.ElicitSlot",
 							"slotToElicit": "musicGenre",
 					}];
-					// TODO: Set the custom directives
-					response.response.response.directives=dialog;
-					console.log(response.response.response.directives);
-					console.log(response);
 					var result=entityClassifier.classify(song);
 					console.log(result);
 					var content = "Classifier got =>"+result;
