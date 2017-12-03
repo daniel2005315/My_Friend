@@ -112,27 +112,29 @@ app.intent("WhoIntent", function(request,response){
 // TODO:  Connect it to database so the result is based on database value
 app.intent("PickMusicIntent", {},
   function(request,response) {
-		return database.find("favorite.music.song").then(function(song){
+		return database.find("favorite.music.song").then(function(result){
 			// Get user's
 	    response.say("Here's your favourite lately!");
-			console.log(song);
-			console.log(song.song);
-			// TODO:
-			// Fetch for user's favourite song lately
+			console.log(result);
+			console.log(result.favorite.music.song);
 
-			// database call for user's favourite song
-
-			// put into the song variable
-			var song="Vincent-Don_McLean.mp3";
+			var song=result.favorite.music.song;
 
 			// encoded the link for the song
-			var url = "https://evening-savannah-89199.herokuapp.com/music/"+song;
+			var url = "https://evening-savannah-89199.herokuapp.com/music/"+song+".mp3";
 			var stream={
 				"token": "90",
 				"url": url,
 				"offsetInMilliseconds": 0
 			}
 			console.log("playing: "+url);
+			// Card display for details
+			var content=song;
+			response.card({
+				type:"Simple",
+				title:"Your friend picked this song for you",
+				content: content
+			});
 			// Start the play directive
 			response.audioPlayerPlayStream("REPLACE_ALL", stream)
 
