@@ -100,7 +100,7 @@ app.intent("GreetingIntent",
 
 // Get username from database
 app.intent("WhoIntent", function(request,response){
-	return database.find(username).then(function(result){
+	return database.find("username").then(function(result){
 		console.log("***Database query");
 		console.log(result);
 		var name =result.username;
