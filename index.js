@@ -98,6 +98,15 @@ app.intent("GreetingIntent",
 	}
 );
 
+// Get username from database
+app.intent("WhoIntent", function(request,response){
+	return database.findUser().then(function(result){
+		console.log("***Database query");
+		console.log(result);
+		response.say("You are "+result);
+	});
+
+});
 
 // TODO:  Connect it to database so the result is based on database value
 app.intent("WelcomeMusicIntent", {},
