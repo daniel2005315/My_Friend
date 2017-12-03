@@ -88,6 +88,7 @@ app.intent("TestIntent",
 				status='offline';
 			}
 			response.say("Greetings from Jarvis. Current version is beta one point three. Database connection currently "+status);
+			response.shouldEndSession(false);
 		});
 	}
 );
