@@ -104,8 +104,8 @@ app.intent("WhoIntent", function(request,response){
 		console.log("***Database query");
 		console.log(result);
 		var name =result.username;
-		console.log()
-		response.say("You are "+result);
+		console.log(name);
+		response.say("You are "+name);
 	});
 
 });
