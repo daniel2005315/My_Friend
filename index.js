@@ -93,6 +93,7 @@ app.intent("TestIntent",
 			}
 			response.say("Greetings from Jarvis. Current version is beta one point three. Database connection status is "+result);
 		});
+	}
 );
 
 app.intent("GreetingIntent",
