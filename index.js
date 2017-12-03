@@ -98,7 +98,7 @@ app.intent("GreetingIntent",
 	}
 );
 
-// Get username from database
+// Get username from database (DONE)
 app.intent("WhoIntent", function(request,response){
 	return database.find("username").then(function(result){
 		console.log("***Database query");
@@ -107,32 +107,37 @@ app.intent("WhoIntent", function(request,response){
 		console.log(name);
 		response.say("You are "+name);
 	});
-
 });
 
 // TODO:  Connect it to database so the result is based on database value
-app.intent("WelcomeMusicIntent", {},
+app.intent("PickMusicIntent", {},
   function(request,response) {
-		// Get user's
-    response.say("Here's your favourte lately!");
-		// TODO:
-		// Fetch for user's favourite song lately
+		return database.find("favorite.song").then(function(song){
+			// Get user's
+	    response.say("Here's your favourte lately!");
+			console.log(song);
+			console.log(song.song);
+			// TODO:
+			// Fetch for user's favourite song lately
 
-		// database call for user's favourite song
+			// database call for user's favourite song
 
-		// put into the song variable
-		var song="floating.mp3";
+			// put into the song variable
+			var song="Vincent-Don McLean.mp3";
 
-		// encoded the link for the song
-		var url = "https://evening-savannah-89199.herokuapp.com/music/"+song;
-		var stream={
-			"token": "90",
-			"url": url,
-			"offsetInMilliseconds": 0
-		}
-		console.log("playing: "+url);
-		// Start the play directive
-		response.audioPlayerPlayStream("REPLACE_ALL", stream)
+			// encoded the link for the song
+			var url = "https://evening-savannah-89199.herokuapp.com/music/"+song;
+			var stream={
+				"token": "90",
+				"url": url,
+				"offsetInMilliseconds": 0
+			}
+			console.log("playing: "+url);
+			// Start the play directive
+			response.audioPlayerPlayStream("REPLACE_ALL", stream)
+
+		});
+
   }
 );
 
@@ -431,7 +436,7 @@ function shareMusicCB(request,response) {
 				else {
 					sentiment="don't like"
 				}
-				var speech="I know that you"+sentiment+"it";
+				var speech="I know that you "+sentiment+" it";
 				response.say(speech);
 				response.shouldEndSession(true);
 			}else{
