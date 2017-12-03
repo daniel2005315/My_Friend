@@ -249,10 +249,10 @@ app.intent("ShareIntent",{
 							response.shouldEndSession(result.sessionEnd);
 						});
 					}
-					if(id==="WORK")
+					if(id==="FYP")
 					{
 						console.log(request);
-						return shareWorkAsync(request).then(function(result){
+						return shareFYPAsync(request).then(function(result){
 							console.log(result);
 							if(result.dialog!=null)
 								response.response.response.directives=result.dialog;
@@ -299,7 +299,7 @@ app.intent("ShareMusicIntent", {
 );
 
 // Async Work handler
-function shareWorkAsync(request){
+function shareFYPAsync(request){
 	return new Promise((resolve,reject)=>{
 			var feel = request.slot('feeling');
 			console.log("***analysing sentiment");
@@ -323,6 +323,7 @@ function shareWorkAsync(request){
 
 			// pass promise back
 			resolve(result);
+});
 }
 
 // Working
