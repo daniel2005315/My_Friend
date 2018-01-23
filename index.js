@@ -863,4 +863,21 @@ function checkMusicSlots(song,genre,musician){
 		check+=7;
 	return check;
 }
+
+// 23-1-2018 Added Language related skills
+// Intent for translating a language
+app.intent("TranslateIntent", {
+    "slots": {
+      "phrase": "FreePhrase",
+      "language": "AMAZON.Language"
+    }
+  },function(request,response){
+
+		var phrase = request.slot('phrase');
+    var language = request.slot('language');
+		// test if Literal can capture free speech input
+    response.say("You want to translate "+ phrase+" into "+language);
+	}
+);
+
 module.exports = app;
