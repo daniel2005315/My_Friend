@@ -100,9 +100,12 @@ app.intent("ThankIntent",
 		response.shouldEndSession(true);
 	})
 
-app.intent("GreetingIntent",
+// 25-1-2018  Greetings
+// Description: Start of the daily interaction monitoring
+app.intent("GreetingsIntent",
 	function(request,response){
-		response.say("Greetings from Jarvis. System is standing by.");
+		response.say("Hi there! How are you doing?");
+		response.linkAccount();
 	}
 );
 
