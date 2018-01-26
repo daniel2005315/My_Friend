@@ -87,7 +87,7 @@ app.intent("TestIntent",
 			else {
 				status='offline';
 			}
-			response.say("Greetings from Jarvis. Current version is beta one point three. Database connection currently "+status);
+			response.say("Greetings. Current version is beta one point four. Database connection currently "+status);
 			response.shouldEndSession(false);
 		});
 	}
@@ -322,7 +322,7 @@ function loginCheck(request){
 			var sessionEnd = true;
 			var authState = false;
 		}else{
-			var speech = "Please login to your Amazon account in the companion app to start using this skill";
+			var speech = "How are you doing?";
 			var sessionEnd = false;
 			var authState = true;
 		}
