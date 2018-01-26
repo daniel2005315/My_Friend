@@ -104,8 +104,12 @@ app.intent("ThankIntent",
 // Description: Start of the daily interaction monitoring
 app.intent("GreetingsIntent",
 	function(request,response){
-		response.say("Hi there! How are you doing?");
-		response.linkAccount();
+		return loginCheck(request).then(function(result){
+			if(result.auth==false){
+				response.linkAccount();
+			}
+			response.say(result.speech);
+		});
 	}
 );
 
@@ -310,6 +314,26 @@ app.intent("ShareMusicIntent", {
 	}
 );
 
+// 26-1-2018 function for authentication check
+function loginCheck(request){
+	return new Promise((resolve,reject)=>{
+		if(request.data.session.user.accessToken == undefined){
+			var speech = "Please login to your Amazon account in the companion app to start using this skill";
+			var sessionEnd = true;
+			var authState = false;
+		}else{
+			var speech = "Please login to your Amazon account in the companion app to start using this skill";
+			var sessionEnd = false;
+			var authState = true;
+		}
+		var result={
+			"speech": speech,
+			"sessionEnd": sessionEnd,
+			"auth": authState
+		}
+		resolve(result);
+});
+}
 // Async Work handler
 function shareFYPAsync(request){
 	return new Promise((resolve,reject)=>{
