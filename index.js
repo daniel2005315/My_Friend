@@ -76,6 +76,20 @@ app.intent("AMAZON.CancelIntent", {
   }
 );
 
+// 6-2-2018 updated
+// Testing with "CatchAll" intent
+app.intent("CatchAllIntent", {
+    "slots": {
+      "speech": "CatchAll"
+    }
+  }
+  ,
+  function(request,response) {
+    var userIn = request.slot('speech');
+    response.say("You said "+ userIn);
+  }
+);
+
 // For checking if the code is updated
 // TODO: Connect to database (DONE)
 app.intent("TestIntent",
