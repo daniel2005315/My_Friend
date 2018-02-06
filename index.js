@@ -142,7 +142,7 @@ app.intent("WhoIntent", function(request,response){
 // TODO:  Connect it to database so the result is based on database value
 app.intent("PickMusicIntent", {},
   function(request,response) {
-		return database.find("favorite.music.song").then(function(result){
+		return dacdtabase.find("favorite.music.song").then(function(result){
 			// Get user's
 	    response.say("Here's your favourite lately!");
 			console.log(result);
