@@ -19,7 +19,7 @@ app.error = function( exception, request, response ) {
 	console.log(exception)
 	console.log(request);
 	console.log(response);
-	response.say( 'Sorry, an error occured ');
+	response.say( 'Sorry an error occured ');
 	var content = exception;
 	response.card({
 		type:"Simple",
@@ -86,16 +86,7 @@ app.intent("CatchAllIntent", {
   ,
   function(request,response) {
     var userIn = request.slot('speech');
-    // TODO
-    // Log user input, time stamp
-    // Perform sentiment analysis on input
-
-    // TODO
-    // function call with input to DialogFlow
-
-    // simply repeat for now
     response.say("You said "+ userIn);
-		response.shouldEndSession(false);
   }
 );
 
@@ -116,6 +107,13 @@ app.intent("TestIntent",
 	}
 );
 
+// to end session
+app.intent("ThankIntent",
+	function(request,response){
+		response.say("You're welcome.");
+		response.shouldEndSession(true);
+	})
+
 // 25-1-2018  Greetings
 // Description: Start of the daily interaction monitoring
 app.intent("GreetingsIntent",
@@ -130,7 +128,6 @@ app.intent("GreetingsIntent",
 );
 
 // Get username from database (DONE)
-// Kept as template
 app.intent("WhoIntent", function(request,response){
 	return database.find("username").then(function(result){
 		console.log("***Database query");
@@ -177,7 +174,24 @@ app.intent("PickMusicIntent", {},
 );
 
 // TODO: Handle the player object
-
+// Play music
+app.intent("MusicIntent", {
+    "slots": {
+      "MusicType": "AMAZON.Genre",
+      "Musician": "AMAZON.Musician"
+    }
+  }
+  ,
+  function(request,response) {
+    var musicType = request.slot('MusicType');
+    var musician = request.slot('Musician');
+    if(musicType==null)
+      console.log("No music type specified");
+    if(musician==null)
+      console.log("Nomusician specified");
+    response.say("You wanna play some "+ musicType+" music by artist:["+musician+"]");
+  }
+);
 
 
 // Intent that train your friend to know more about you
