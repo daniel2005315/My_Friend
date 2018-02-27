@@ -9,6 +9,11 @@ var sentiment_Analyser = require.main.require('./process/sAnalyse.js');
 var entityClassifier = require.main.require('./process/entityTrain.js');
 var database = require.main.require('./db/database.js');
 
+// For making API call to Dialogflow
+// Client token: da9e1b70742a4272ac020ae9d87d6f35
+// Dev Access token: df95f94d49a54fbe98b020434cc95438
+var request= require.main.require('request');
+
 
 // A few default intents to be handled
 app.launch( function( request, response ) {
@@ -76,6 +81,19 @@ app.intent("AMAZON.CancelIntent", {
   }
 );
 
+// wrapper for async usage of request
+function doRequest(url) {
+  return new Promise(function (resolve, reject) {
+    request(url, function (error, res, body) {
+      if (!error && res.statusCode == 200) {
+        resolve(body);
+      } else {
+        reject(error);
+      }
+    });
+  });
+}
+
 // 6-2-2018 updated
 // Testing with "CatchAll" intent
 app.intent("CatchAllIntent", {
@@ -84,20 +102,45 @@ app.intent("CatchAllIntent", {
     }
   }
   ,
-  function(request,response) {
+  async function(request,response) {
     var userIn = request.slot('speech');
     // TODO
     // Log user input, time stamp
     // Perform sentiment analysis on input
-
+	  console.log("---Alexa Input Log---");
+		console.log("timestamp: "+new Date().toISOString());
+		console.log("user input: "+userIn);
+		console.log("--------------------");
     // TODO
     // function call with input to DialogFlow
+		// options for query call on DialogFlow
+		var options = {
+			headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
+		    url: 'https://api.dialogflow.com/v1/query?v=20150910',
+		    method: 'POST',
+		    json:true,
+		    body: {
+					"lang": "en",
+					"query": userIn,
+					"sessionId": "12345",
+					//optional "timezone": "America/New_York"
+				}
+		};
 
-    // simply repeat for now
-    response.say("You said "+ userIn);
+		// aync call
+		let res = await doRequest(options);
+		// log JSON respond
+		console.log(res);
+		console.log(res.result.fulfillment.speech);
+
+		var resSpeech = res.result.fulfillment.speech;
+    // 26-2-2018
+		// Respond according to Dialog Flow
+    response.say(resSpeech);
 		response.shouldEndSession(false);
   }
 );
+
 
 // For checking if the code is updated
 // TODO: Connect to database (DONE)
