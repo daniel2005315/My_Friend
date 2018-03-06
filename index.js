@@ -17,7 +17,7 @@ var request= require.main.require('request');
 
 // A few default intents to be handled
 app.launch( function( request, response ) {
-	response.say( 'Your friend is here!' ).shouldEndSession( false );
+	response.say( '<speak>Your friend is here!<amazon:effect name="whispered">I am actually not real.<amazon:effect>How are you doing?</speak>' ).shouldEndSession( false );
 } );
 
 app.error = function( exception, request, response ) {
