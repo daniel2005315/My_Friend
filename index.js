@@ -14,10 +14,22 @@ var database = require.main.require('./db/database.js');
 // Dev Access token: df95f94d49a54fbe98b020434cc95438
 var request= require.main.require('request');
 
+// For constructing ssml
+var AmazonSpeech = require('ssml-builder/amazon_speech');
+
 
 // A few default intents to be handled
 app.launch( function( request, response ) {
-	response.say( '<speak>Your friend is here!<amazon:effect name="whispered">I am actually not real.<amazon:effect>How are you doing?</speak>' ).shouldEndSession( false );
+	var speech = new AmazonSpeech();
+  speech.say('Hi there!')
+  .pause('500ms')
+  .whisper('I just woke up')
+  .pause('500ms')
+  .say('How are you doing?');
+
+	var speechOutput = speech.ssml();
+	console.log(speechOutput);
+	response.say(speechOutput);
 } );
 
 app.error = function( exception, request, response ) {
@@ -110,6 +122,9 @@ app.intent("CatchAllIntent", {
 	  console.log("---Alexa Input Log---");
 		console.log("timestamp: "+new Date().toISOString());
 		console.log("user input: "+userIn);
+		// Calculate sentiment score
+		var score = sentiment_Analyser.getScore(userIn);
+		console.log("input sentiment score: "+score);
 		console.log("--------------------");
     // TODO
     // function call with input to DialogFlow

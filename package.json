@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/daniel2005315/My_Friend#readme",
   "dependencies": {
-    "alexa-app": "^4.2.0"
+    "alexa-app": "^4.2.0",
+    "ssml-builder": "^0.4.3"
   }
 }
