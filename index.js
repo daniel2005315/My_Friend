@@ -29,7 +29,14 @@ app.launch( function( request, response ) {
 
 	var speechOutput = speech.ssml();
 	console.log(speechOutput);
-	response.say(speechOutput);
+	//response.say(speechOutput);
+	///* manually formatting the output
+	response.response.outputSpeech = {
+        "type": "SSML",
+        "ssml": "<speak>Hi there! <break time=\'500ms\'/><amazon:effect name=\'whispered'>I just woke up</amazon:effect> <break time=\'500ms\'/> How are you doing?</speak>"
+      };
+	console.log(response);
+	//*/
 } );
 
 app.error = function( exception, request, response ) {
