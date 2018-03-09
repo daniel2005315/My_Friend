@@ -20,6 +20,7 @@ var AmazonSpeech = require('ssml-builder/amazon_speech');
 
 // A few default intents to be handled
 app.launch( function( request, response ) {
+	// Worked with SSML
 	var speech = new AmazonSpeech();
   speech.say('Hi there!')
   .pause('500ms')
@@ -29,18 +30,8 @@ app.launch( function( request, response ) {
 
 	var speechOutput = speech.ssml();
 	console.log(speechOutput);
-	// check Alexa's reply
-	response.say(speechOutput);
-	//response.say(speechOutput);
-	///* manually formatting the output
-	/*
-	response.response.outputSpeech = {
-        "type": "SSML",
-        "ssml": "<speak>Hi there! <break time=\'500ms\'/><amazon:effect name=\'whispered'>I just woke up</amazon:effect> <break time=\'500ms\'/> How are you doing?</speak>"
-      };
-	console.log(response);
-	*/
-	//*/
+	// keep the dialog up
+	response.say(speechOutput).shouldEndSession(false);
 } );
 
 app.error = function( exception, request, response ) {
