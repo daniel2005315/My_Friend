@@ -147,8 +147,8 @@ app.intent("CatchAllIntent", {
 		// aync call
 		let res = await doRequest(options);
 		// log JSON respond
-		console.log(res);
-		console.log(res.result.fulfillment.speech);
+		//console.log(res);
+		//console.log(res.result.fulfillment.speech);
 
 		var resSpeech = res.result.fulfillment.speech;
     // 26-2-2018
