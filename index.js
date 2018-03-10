@@ -145,7 +145,14 @@ app.intent("CatchAllIntent", {
 		};
 
 		// aync call
-		let res = await doRequest(options);
+		let res;
+		try{
+			let res = await doRequest(options);
+		}catch(err){
+			console.log(err);
+			response.say("Sorry there was an error");
+			return;
+		}
 		// log JSON respond
 		//console.log(res);
 		//console.log(res.result.fulfillment.speech);
