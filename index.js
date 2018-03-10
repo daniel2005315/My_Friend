@@ -148,6 +148,11 @@ app.intent("CatchAllIntent", {
 		let res;
 		try{
 			let res = await doRequest(options);
+			var resSpeech = res.result.fulfillment.speech;
+	    // 26-2-2018
+			// Respond according to Dialog Flow
+	    response.say(resSpeech);
+			response.shouldEndSession(false);
 		}catch(err){
 			console.log(err);
 			response.say("Sorry there was an error");
@@ -157,11 +162,7 @@ app.intent("CatchAllIntent", {
 		//console.log(res);
 		//console.log(res.result.fulfillment.speech);
 
-		var resSpeech = res.result.fulfillment.speech;
-    // 26-2-2018
-		// Respond according to Dialog Flow
-    response.say(resSpeech);
-		response.shouldEndSession(false);
+
   }
 );
 
