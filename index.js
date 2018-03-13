@@ -88,6 +88,7 @@ app.intent("AMAZON.CancelIntent", {
 app.launch( async function( request, response ) {
 	// **TODO Check count from DB
 	if(daily_count==0){
+		console.log("Daily starts");
 		// Worked with SSML
 		/*
 		var speech = new AmazonSpeech();
@@ -114,7 +115,9 @@ app.launch( async function( request, response ) {
 		// aync API call
 		let res;
 		try{
+			console.log("Sending request")
 			let res = await doRequest(options);
+			console.log(res);
 			var resSpeech = res.result.fulfillment.speech;
 			response.say(resSpeech);
 			response.shouldEndSession(false);
