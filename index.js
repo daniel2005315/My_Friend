@@ -120,10 +120,9 @@ app.launch( async function( request, response ) {
 				json:true,
 				body: {
 					"lang": "en",
-					"query": "empty",
 					"sessionId": "12345",
 					// init event, empty query
-					"event":{'name': 'daily_init_event'}
+					"event":[{"name": "daily_init_event"}]
 				}
 		};
 		// aync API call
@@ -211,7 +210,7 @@ app.intent("CatchAllIntent", {
 						"query": "",
 						"sessionId": "12345",
 						// init event, empty query
-						"event":{'name': 'daily_init_event'}
+						"event":[{"name": "daily_init_event"}]
 					}
 			};
 			// aync API call
