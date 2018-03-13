@@ -91,7 +91,8 @@ function doRequest(url) {
 				console.log("[doRequest]res received");
         resolve(body);
       } else {
-				console.log("[doRequest]rejected, error=>"+error)
+				console.log("Status code:"+res.statusCode);
+				console.log("[doRequest]rejected, error=>"+error);
         reject(error);
       }
     });
@@ -122,7 +123,7 @@ app.launch( async function( request, response ) {
 					"lang": "en",
 					"sessionId": "12345",
 					// init event, empty query
-					"event":[{"name": "daily_init_event"}]
+					"event":{"name": "daily_init_event"}
 				}
 		};
 		// aync API call
@@ -140,6 +141,11 @@ app.launch( async function( request, response ) {
 			daily_count++;
 			return;
 		}
+	}else{
+		// Pass to CatchAll
+		// dummy for now
+		daily_count--;
+		return;
 	}
 } );
 
@@ -208,10 +214,9 @@ app.intent("CatchAllIntent", {
 					json:true,
 					body: {
 						"lang": "en",
-						"query": "",
 						"sessionId": "12345",
 						// init event, empty query
-						"event":[{"name": "daily_init_event"}]
+						"event":{"name": "daily_init_event"}
 					}
 			};
 			// aync API call
