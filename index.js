@@ -20,7 +20,7 @@ var AmazonSpeech = require('ssml-builder/amazon_speech');
 // 13-3-2018
 // Dummy counter for daily dialog check
 var daily_count=0;
-
+var session_sentiment=0;
 
 app.error = function( exception, request, response ) {
 	console.log(exception)
@@ -101,20 +101,12 @@ function doRequest(url) {
 
 // A few default intents to be handled
 app.launch( async function( request, response ) {
+	var options;
 	// **TODO Check count from DB
 	if(daily_count==0){
 		console.log("Daily starts");
-		// Worked with SSML
-		/*
-		var speech = new AmazonSpeech();
-	  speech.say('Hi there!How are you doing?');
-		var speechOutput = speech.ssml();
-		console.log(speechOutput);
-		*/
-		// keep the dialog up
-
 		// Send API call with daily_init_event
-		var options = {
+		options = {
 			headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
 				url: 'https://api.dialogflow.com/v1/query?v=20150910',
 				method: 'POST',
@@ -126,25 +118,35 @@ app.launch( async function( request, response ) {
 					"event":{"name": "daily_init_event"}
 				}
 		};
-		// aync API call
-		let res;
-		try{
-			console.log("Sending request")
-			let res = await doRequest(options);
-			console.log("response =>\n"+res);
-			var resSpeech = res.result.fulfillment.speech;
-			response.say(resSpeech);
-			response.shouldEndSession(false);
-		}catch(err){
-			console.log("Error =>"+err);
-			response.say("Sorry there was an error, please try again later");
-			daily_count++;
-			return;
-		}
 	}else{
 		// Pass to CatchAll
-		// dummy for now
-		daily_count--;
+		console.log("Non Daily greetings");
+		options = {
+			headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
+				url: 'https://api.dialogflow.com/v1/query?v=20150910',
+				method: 'POST',
+				json:true,
+				body: {
+					"lang": "en",
+					"sessionId": "12345",
+					// init event, empty query
+					"event":{"name": "daily_user_status"}
+				}
+		};
+	}
+	// aync API call
+	let res;
+	try{
+		console.log("Sending request")
+		let res = await doRequest(options);
+		console.log("response =>\n"+res);
+		var resSpeech = res.result.fulfillment.speech;
+		response.say(resSpeech);
+		response.shouldEndSession(false);
+		daily_count++;
+	}catch(err){
+		console.log("Error =>"+err);
+		response.say("Sorry there was an error, please try again later");
 		return;
 	}
 } );
@@ -170,40 +172,31 @@ app.intent("CatchAllIntent", {
 			console.log("timestamp: "+new Date().toISOString());
 			console.log("user input: "+userIn);
 			// Calculate sentiment score
+			// 13-3-2018 Addded cumulative sentiment score among user queries
 			var score = sentiment_Analyser.getScore(userIn);
-			console.log("input sentiment score: "+score);
-			console.log("--------------------");
+			session_sentiment = (session_sentiment*daily_count+score)/(daily_count+1);
+			console.log("input sentiment score: "+score+" session sentiment: "+session_sentiment);
+			console.log("----------count: "+daily_count+"----------");
+			// context input
+			var sentiment;
+			if(score>0){sentiment="sentiment_positive"}
+			if(score<0){sentiment="sentiment_negative"}
+			if(score==0){sentiment="sentiment_neutral"}
 
-	    // TODO
-	    // function call with input to DialogFlow
-			// options for query call on DialogFlow
 			var options = {
 				headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
 			    url: 'https://api.dialogflow.com/v1/query?v=20150910',
 			    method: 'POST',
 			    json:true,
 			    body: {
+						// added contexts var
+						"contexts":[sentiment],
 						"lang": "en",
 						"query": userIn,
 						"sessionId": "12345",
 						//optional "timezone": "America/New_York"
 					}
 			};
-
-			// aync API call
-			let res;
-			try{
-				let res = await doRequest(options);
-				var resSpeech = res.result.fulfillment.speech;
-		    // 26-2-2018
-				// Respond according to Dialog Flow
-		    response.say(resSpeech);
-				response.shouldEndSession(false);
-			}catch(err){
-				console.log(err);
-				response.say("Sorry there was an error");
-				return;
-			}
 		}else{
 			// *** Code reuse
 			// Send API call with daily_init_event
@@ -219,18 +212,20 @@ app.intent("CatchAllIntent", {
 						"event":{"name": "daily_init_event"}
 					}
 			};
-			// aync API call
-			let res;
-			try{
-				let res = await doRequest(options);
-				var resSpeech = res.result.fulfillment.speech;
-				response.say(resSpeech);
-				response.shouldEndSession(false);
-			}catch(err){
-				console.log(err);
-				response.say("Sorry there was an error, please try again later");
-				return;
-			}
+		}
+
+		// aync API call
+		let res;
+		try{
+			let res = await doRequest(options);
+			var resSpeech = res.result.fulfillment.speech;
+			daily_count++;
+			response.say(resSpeech);
+			response.shouldEndSession(false);
+		}catch(err){
+			console.log(err);
+			response.say("Sorry there was an error, please try again later");
+			return;
 		}
 
   }
