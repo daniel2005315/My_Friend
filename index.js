@@ -85,7 +85,7 @@ app.intent("AMAZON.CancelIntent", {
 
 
 // A few default intents to be handled
-app.launch( function( request, response ) {
+app.launch( async function( request, response ) {
 	// **TODO Check count from DB
 	if(daily_count==0){
 		// Worked with SSML
