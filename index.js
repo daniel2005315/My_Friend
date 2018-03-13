@@ -83,6 +83,20 @@ app.intent("AMAZON.CancelIntent", {
   }
 );
 
+// wrapper for async usage of request
+function doRequest(url) {
+  return new Promise(function (resolve, reject) {
+    request(url, function (error, res, body) {
+      if (!error && res.statusCode == 200) {
+				console.log("[doRequest]res received");
+        resolve(body);
+      } else {
+				console.log("[doRequest]rejected")
+        reject(error);
+      }
+    });
+  });
+}
 
 // A few default intents to be handled
 app.launch( async function( request, response ) {
@@ -106,7 +120,7 @@ app.launch( async function( request, response ) {
 				json:true,
 				body: {
 					"lang": "en",
-					"query": "",
+					"query": "empty",
 					"sessionId": "12345",
 					// init event, empty query
 					"event":{'name': 'daily_init_event'}
@@ -117,31 +131,17 @@ app.launch( async function( request, response ) {
 		try{
 			console.log("Sending request")
 			let res = await doRequest(options);
-			console.log(res);
+			console.log("response =>\n"+res);
 			var resSpeech = res.result.fulfillment.speech;
 			response.say(resSpeech);
 			response.shouldEndSession(false);
 		}catch(err){
-			console.log(err);
+			console.log("Error =>"+err);
 			response.say("Sorry there was an error, please try again later");
 			return;
 		}
 	}
 } );
-
-
-// wrapper for async usage of request
-function doRequest(url) {
-  return new Promise(function (resolve, reject) {
-    request(url, function (error, res, body) {
-      if (!error && res.statusCode == 200) {
-        resolve(body);
-      } else {
-        reject(error);
-      }
-    });
-  });
-}
 
 // 6-2-2018 updated
 // Testing with "CatchAll" intent
