@@ -17,20 +17,10 @@ var request= require.main.require('request');
 // For constructing ssml
 var AmazonSpeech = require('ssml-builder/amazon_speech');
 
+// 13-3-2018
+// Dummy counter for daily dialog check
+var daily_count=0;
 
-// A few default intents to be handled
-app.launch( function( request, response ) {
-	// Worked with SSML
-	var speech = new AmazonSpeech();
-  speech.say('Hi there!')
-  .pause('500ms')
-  .say('How are you doing?');
-
-	var speechOutput = speech.ssml();
-	console.log(speechOutput);
-	// keep the dialog up
-	response.say(speechOutput).shouldEndSession(false);
-} );
 
 app.error = function( exception, request, response ) {
 	console.log(exception)
@@ -93,6 +83,50 @@ app.intent("AMAZON.CancelIntent", {
   }
 );
 
+
+// A few default intents to be handled
+app.launch( function( request, response ) {
+	// **TODO Check count from DB
+	if(daily_count==0){
+		// Worked with SSML
+		/*
+		var speech = new AmazonSpeech();
+	  speech.say('Hi there!How are you doing?');
+		var speechOutput = speech.ssml();
+		console.log(speechOutput);
+		*/
+		// keep the dialog up
+
+		// Send API call with daily_init_event
+		var options = {
+			headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
+				url: 'https://api.dialogflow.com/v1/query?v=20150910',
+				method: 'POST',
+				json:true,
+				body: {
+					"lang": "en",
+					"query": "",
+					"sessionId": "12345",
+					// init event, empty query
+					"event":{'name': 'daily_init_event'}
+				}
+		};
+		// aync API call
+		let res;
+		try{
+			let res = await doRequest(options);
+			var resSpeech = res.result.fulfillment.speech;
+			response.say(resSpeech);
+			response.shouldEndSession(false);
+		}catch(err){
+			console.log(err);
+			response.say("Sorry there was an error, please try again later");
+			return;
+		}
+	}
+} );
+
+
 // wrapper for async usage of request
 function doRequest(url) {
   return new Promise(function (resolve, reject) {
@@ -115,47 +149,80 @@ app.intent("CatchAllIntent", {
   }
   ,
   async function(request,response) {
-    var userIn = request.slot('speech');
-    // TODO
-    // Log user input, time stamp
-    // Perform sentiment analysis on input
-	  console.log("---Alexa Input Log---");
-		console.log("timestamp: "+new Date().toISOString());
-		console.log("user input: "+userIn);
-		// Calculate sentiment score
-		var score = sentiment_Analyser.getScore(userIn);
-		console.log("input sentiment score: "+score);
-		console.log("--------------------");
+		// Check dialog counter
+		// TODO retrieve from database
+		// dummy daily_count var for now
+		if(daily_count!=0){
+	    var userIn = request.slot('speech');
+	    // TODO
+	    // Log user input, time stamp
+	    // Perform sentiment analysis on input
+		  console.log("---Alexa Input Log---");
+			console.log("timestamp: "+new Date().toISOString());
+			console.log("user input: "+userIn);
+			// Calculate sentiment score
+			var score = sentiment_Analyser.getScore(userIn);
+			console.log("input sentiment score: "+score);
+			console.log("--------------------");
 
-    // TODO
-    // function call with input to DialogFlow
-		// options for query call on DialogFlow
-		var options = {
-			headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
-		    url: 'https://api.dialogflow.com/v1/query?v=20150910',
-		    method: 'POST',
-		    json:true,
-		    body: {
-					"lang": "en",
-					"query": userIn,
-					"sessionId": "12345",
-					//optional "timezone": "America/New_York"
-				}
-		};
+	    // TODO
+	    // function call with input to DialogFlow
+			// options for query call on DialogFlow
+			var options = {
+				headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
+			    url: 'https://api.dialogflow.com/v1/query?v=20150910',
+			    method: 'POST',
+			    json:true,
+			    body: {
+						"lang": "en",
+						"query": userIn,
+						"sessionId": "12345",
+						//optional "timezone": "America/New_York"
+					}
+			};
 
-		// aync API call
-		let res;
-		try{
-			let res = await doRequest(options);
-			var resSpeech = res.result.fulfillment.speech;
-	    // 26-2-2018
-			// Respond according to Dialog Flow
-	    response.say(resSpeech);
-			response.shouldEndSession(false);
-		}catch(err){
-			console.log(err);
-			response.say("Sorry there was an error");
-			return;
+			// aync API call
+			let res;
+			try{
+				let res = await doRequest(options);
+				var resSpeech = res.result.fulfillment.speech;
+		    // 26-2-2018
+				// Respond according to Dialog Flow
+		    response.say(resSpeech);
+				response.shouldEndSession(false);
+			}catch(err){
+				console.log(err);
+				response.say("Sorry there was an error");
+				return;
+			}
+		}else{
+			// *** Code reuse
+			// Send API call with daily_init_event
+			var options = {
+				headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
+					url: 'https://api.dialogflow.com/v1/query?v=20150910',
+					method: 'POST',
+					json:true,
+					body: {
+						"lang": "en",
+						"query": "",
+						"sessionId": "12345",
+						// init event, empty query
+						"event":{'name': 'daily_init_event'}
+					}
+			};
+			// aync API call
+			let res;
+			try{
+				let res = await doRequest(options);
+				var resSpeech = res.result.fulfillment.speech;
+				response.say(resSpeech);
+				response.shouldEndSession(false);
+			}catch(err){
+				console.log(err);
+				response.say("Sorry there was an error, please try again later");
+				return;
+			}
 		}
 
   }
