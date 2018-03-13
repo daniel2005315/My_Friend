@@ -24,8 +24,6 @@ app.launch( function( request, response ) {
 	var speech = new AmazonSpeech();
   speech.say('Hi there!')
   .pause('500ms')
-  .whisper('I just woke up')
-  .pause('500ms')
   .say('How are you doing?');
 
 	var speechOutput = speech.ssml();
@@ -128,6 +126,7 @@ app.intent("CatchAllIntent", {
 		var score = sentiment_Analyser.getScore(userIn);
 		console.log("input sentiment score: "+score);
 		console.log("--------------------");
+
     // TODO
     // function call with input to DialogFlow
 		// options for query call on DialogFlow
@@ -144,7 +143,7 @@ app.intent("CatchAllIntent", {
 				}
 		};
 
-		// aync call
+		// aync API call
 		let res;
 		try{
 			let res = await doRequest(options);
@@ -158,10 +157,6 @@ app.intent("CatchAllIntent", {
 			response.say("Sorry there was an error");
 			return;
 		}
-		// log JSON respond
-		//console.log(res);
-		//console.log(res.result.fulfillment.speech);
-
 
   }
 );
