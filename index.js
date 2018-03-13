@@ -91,7 +91,7 @@ function doRequest(url) {
 				console.log("[doRequest]res received");
         resolve(body);
       } else {
-				console.log("[doRequest]rejected")
+				console.log("[doRequest]rejected, error=>"+error)
         reject(error);
       }
     });
@@ -137,6 +137,7 @@ app.launch( async function( request, response ) {
 		}catch(err){
 			console.log("Error =>"+err);
 			response.say("Sorry there was an error, please try again later");
+			daily_count++;
 			return;
 		}
 	}
