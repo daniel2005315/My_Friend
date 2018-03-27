@@ -125,6 +125,7 @@ app.launch( async function( request, response ) {
 	}else{
 		// Pass to CatchAll
 		console.log("Non Daily greetings");
+		daily_count=0;
 	}
 
 	// options
@@ -144,7 +145,7 @@ app.launch( async function( request, response ) {
 	// aync API call
 	let res;
 	try{
-		console.log("Sending request")
+		console.log("Sending request=>"+res);
 		let res = await doRequest(options);
 		console.log("response =>\n"+res);
 		var resSpeech = res.result.fulfillment.speech;
