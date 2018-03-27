@@ -152,7 +152,7 @@ app.launch( async function( request, response ) {
 	try{
 		console.log("Sending request");
 		let res = await doRequest(options);
-		console.log("response result=>\n"+res.fulfillment);
+		console.log("response result=>\n"+res.result.fulfillment);
 		var resSpeech = res.result.fulfillment.speech;
 		response.say(resSpeech);
 		response.shouldEndSession(false);
