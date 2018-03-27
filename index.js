@@ -102,38 +102,45 @@ function doRequest(url) {
 // A few default intents to be handled
 app.launch( async function( request, response ) {
 	var options;
+	// **TODO Check User login
 	// **TODO Check count from DB
+	// **TODO Get user account type
+	// *** For current testing, assume all users are elderly
+	var e_name="daily_elder_init";
+	// TODO set session id with accesstoken
+	var sessionID="12345";
+	// TODO get user name from db
+	// Tried encoding user info in context variable
+	var user_context={
+    "lifespan": 3,
+    "name": "user_info",
+    "parameters": {
+      "usr_name": "Peter"
+    }
+  };
+
 	if(daily_count==0){
 		console.log("Daily starts");
 		// Send API call with daily_init_event
-		options = {
-			headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
-				url: 'https://api.dialogflow.com/v1/query?v=20150910',
-				method: 'POST',
-				json:true,
-				body: {
-					"lang": "en",
-					"sessionId": "12345",
-					// init event, empty query
-					"event":{"name": "daily_init_event"}
-				}
-		};
 	}else{
 		// Pass to CatchAll
 		console.log("Non Daily greetings");
-		options = {
-			headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
-				url: 'https://api.dialogflow.com/v1/query?v=20150910',
-				method: 'POST',
-				json:true,
-				body: {
-					"lang": "en",
-					"sessionId": "12345",
-					// init event, empty query
-					"event":{"name": "daily_user_status"}
-				}
-		};
 	}
+
+	// options
+	options = {
+		headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
+			url: 'https://api.dialogflow.com/v1/query?v=20150910',
+			method: 'POST',
+			json:true,
+			body: {
+				"contexts":[user_context],
+				"lang": "en",
+				"sessionId": sessionID,
+				// init event, empty query
+				"event":{"name": e_name}
+			}
+	};
 	// aync API call
 	let res;
 	try{
