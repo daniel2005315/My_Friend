@@ -149,9 +149,8 @@ app.launch( async function( request, response ) {
 			}
 	};
 	// aync API call
-	let res;
 	try{
-		console.log("Sending request=>"+res);
+		console.log("Sending request");
 		let res = await doRequest(options);
 		console.log("response result=>\n"+res.fulfillment);
 		var resSpeech = res.result.fulfillment.speech;
