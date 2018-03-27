@@ -101,6 +101,12 @@ function doRequest(url) {
 
 // A few default intents to be handled
 app.launch( async function( request, response ) {
+	console.log("***[app.lauch]started");
+	if(request.data.session.user.accessToken!=null)
+		console.log("acess token: "+request.data.session.user.accessToken);
+	else {
+		console.log("no access token");
+	}
 	var options;
 	// **TODO Check User login
 	// **TODO Check count from DB
@@ -147,7 +153,7 @@ app.launch( async function( request, response ) {
 	try{
 		console.log("Sending request=>"+res);
 		let res = await doRequest(options);
-		console.log("response =>\n"+res);
+		console.log("response result=>\n"+res.fulfillment);
 		var resSpeech = res.result.fulfillment.speech;
 		response.say(resSpeech);
 		response.shouldEndSession(false);
