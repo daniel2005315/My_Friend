@@ -4,10 +4,26 @@ module.change_code = 1;
 
 var alexa = require( 'alexa-app' );
 var app = new alexa.app( 'my_friend' );
+// 4-4-2018 Added Express for routing
+var express = require("express");
+
+var express_app = express();
+
+// TODO Try adding auth middleware
+/*
+express_app.use('*',oauth2.required, (req, res, next) => {
+  console.log("Middleware check\n");
+});
+*/
+
+// setup the alexa app and attach it to express before anything else
+app.express({ expressApp: express_app });
+
 // server-side tools for processing
 var sentiment_Analyser = require.main.require('./process/sAnalyse.js');
 var entityClassifier = require.main.require('./process/entityTrain.js');
 var database = require.main.require('./db/database.js');
+
 
 // For making API call to Dialogflow
 // Client token: da9e1b70742a4272ac020ae9d87d6f35
@@ -102,11 +118,19 @@ function doRequest(url) {
 // A few default intents to be handled
 app.launch( async function( request, response ) {
 	console.log("***[app.lauch]started");
+
 	if(request.data.session.user.accessToken!=null)
 		console.log("acess token: "+request.data.session.user.accessToken);
 	else {
 		console.log("no access token");
+		// 5-4-2018
+		// Account linking with Google
+		response.linkAccount();
+		response.say("Please login with your Google account first.");
+		return;
 	}
+
+
 	var options;
 	// **TODO Check User login
 	// **TODO Check count from DB
