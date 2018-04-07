@@ -185,7 +185,8 @@ app.launch( async function( request, response ) {
 	try{
 		console.log("Sending request");
 		let res = await doRequest(options);
-		console.log("response result=>\n"+res.result.fulfillment);
+		console.log("response result=>\n");
+		console.log(res.result.fulfillment);
 		var resSpeech = res.result.fulfillment.speech;
 		response.say(resSpeech);
 		response.shouldEndSession(false);
@@ -228,6 +229,13 @@ app.intent("CatchAllIntent", {
 			if(score>0){sentiment="sentiment_positive"}
 			if(score<0){sentiment="sentiment_negative"}
 			if(score==0){sentiment="sentiment_neutral"}
+
+			// 7-4-2018 Add checking on session value in request
+			if(request.hasSession()){
+				console.log("Session object:");
+				var session = request.getSession();
+			  console.log(session);
+			}
 
 			var options = {
 				headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
