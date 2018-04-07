@@ -119,6 +119,15 @@ function doRequest(url) {
 app.launch( async function( request, response ) {
 	console.log("***[app.lauch]started");
 
+	console.log("*check for user session object\n");
+	if(request.user!=null)
+		console.log(request.user);
+	else{
+		console.log("Cannot find user session object");
+	}
+	// TODO Cannot check user session with this data object
+	// TODO *******************************************
+	// TODO Try check other param in request
 	if(request.data.session.user.accessToken!=null)
 		console.log("acess token: "+request.data.session.user.accessToken);
 	else {
