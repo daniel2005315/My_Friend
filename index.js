@@ -272,7 +272,8 @@ app.intent("CatchAllIntent", {
 		let res;
 		try{
 			let res = await doRequest(options);
-			console.log("response result=>\n"+res.fulfillment);
+			console.log("response result=>\n");
+			console.log(res.result);
 			var resSpeech = res.result.fulfillment.speech;
 			daily_count++;
 			response.say(resSpeech);
