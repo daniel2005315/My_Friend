@@ -119,12 +119,7 @@ function doRequest(url) {
 app.launch( async function( request, response ) {
 	console.log("***[app.lauch]started");
 
-	console.log("*check for user session object\n");
-	if(request.user!=null)
-		console.log(request.user);
-	else{
-		console.log("Cannot find user session object");
-	}
+
 	// TODO Cannot check user session with this data object
 	// TODO *******************************************
 	// TODO Try check other param in request
@@ -139,7 +134,19 @@ app.launch( async function( request, response ) {
 		return;
 	}
 
+	// User have logged in , user session obj should not be null
+	console.log("*check for user session object\n");
+	if(request.user!=null)
+		console.log(request.user);
+	else{
+		console.log("Cannot find user session object");
+	}
 
+	// TODO: Now we have an authentidated Google users
+	// DO te followin
+	// 1. validate user in DB
+  // 2. check user daily status
+	
 	var options;
 	// **TODO Check User login
 	// **TODO Check count from DB
