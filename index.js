@@ -135,25 +135,29 @@ app.launch( async function( request, response ) {
 		response.say("Please login with your Google account first.");
 		return;
 	}
+	// Check the whole requestType
+	console.log("LOGGING FULL request");
+	console.log(request);
 
-	// User have logged in , user session obj should not be null
-	console.log("*check for user session object\n");
-	if(request.user!=null)
-		console.log(request.user);
-	else{
-		console.log("Cannot find user session object");
+	// TODO: Test using request.getSession
+	var session;
+	var accessToken;
+	if(request.getSession()!=null){
+		session = request.getSession();
+		// Better way to get session variables
+		accessToken = session.get("accessToken");
+		console.log("Get session function returns: "+accessToken);
 	}
-
 	// TODO: Now we have an authentidated Google users
 	// DO te followin
-	// 1. validate user in DB
-	let result= await validateUser(request.user.email);
+	// 1. validate user in DB (use access token)
+	let result= await validateUser(accessToken);
 	if(result!=null){
 		console.log("user exists in db");
 		// Proceed with user
 	}else{
 		console.log("user not in DB yet, create new record and do init dialogs");
-		let result = await model.addUser(request.user.email,request.user.accessToken);
+		let result = await model.addUser("dummy",accessToken);
 		console.log(result);
 	}
   // 2. check user daily status
