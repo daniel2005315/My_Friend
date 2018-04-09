@@ -97,6 +97,7 @@ app.intent("AMAZON.CancelIntent", {
   }, function(request, response) {
     var cancelOutput = "No problem. Request cancelled.";
     response.say(cancelOutput);
+		response.shouldEndSession(true);
   }
 );
 
@@ -156,6 +157,7 @@ app.launch( async function( request, response ) {
 		console.log("user exists in db");
 		// Proceed with user
 	}else{
+		// This section should not be invoked
 		console.log("user not in DB yet, create new record and do init dialogs");
 		let result = await model.addUser("dummy",accessToken);
 		console.log(result);
@@ -210,6 +212,14 @@ app.launch( async function( request, response ) {
 		console.log("response result=>\n");
 		console.log(res.result.fulfillment);
 		var resSpeech = res.result.fulfillment.speech;
+		// Output contexts
+		// Store it to request Session object to persist the value
+		var contexts = res.result.contexts;
+		// TODO Try setting session with array
+		session.set("contexts",contexts);
+		// TODO:
+		// Function to check certain values within context
+		// Perform reactions e.g. Music streaming
 		response.say(resSpeech);
 		response.shouldEndSession(false);
 		daily_count++;
@@ -229,6 +239,8 @@ app.intent("CatchAllIntent", {
   }
   ,
   async function(request,response) {
+		console.log("Log request");
+		console.log(request);
 		// Check dialog counter
 		// TODO retrieve from database
 		// dummy daily_count var for now
