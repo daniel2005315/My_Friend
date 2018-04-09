@@ -23,7 +23,8 @@ app.express({ expressApp: express_app });
 var sentiment_Analyser = require.main.require('./process/sAnalyse.js');
 var entityClassifier = require.main.require('./process/entityTrain.js');
 var database = require.main.require('./db/database.js');
-
+// For accessing db model
+var model = require.main.require('./db/model.js');
 
 // For making API call to Dialogflow
 // Client token: da9e1b70742a4272ac020ae9d87d6f35
@@ -115,14 +116,15 @@ function doRequest(url) {
   });
 }
 
+// Check if user exists in DB
+async function validateUser(email){
+	let result = await model.findUser(email);
+	return result;
+}
 // A few default intents to be handled
 app.launch( async function( request, response ) {
 	console.log("***[app.lauch]started");
 
-
-	// TODO Cannot check user session with this data object
-	// TODO *******************************************
-	// TODO Try check other param in request
 	if(request.data.session.user.accessToken!=null)
 		console.log("acess token: "+request.data.session.user.accessToken);
 	else {
@@ -145,8 +147,17 @@ app.launch( async function( request, response ) {
 	// TODO: Now we have an authentidated Google users
 	// DO te followin
 	// 1. validate user in DB
+	let result= await validateUser(request.user.email);
+	if(result!=null){
+		console.log("user exists in db");
+		// Proceed with user
+	}else{
+		console.log("user not in DB yet, create new record and do init dialogs");
+		let result = await model.addUser(request.user.email,request.user.accessToken);
+		console.log(result);
+	}
   // 2. check user daily status
-	
+
 	var options;
 	// **TODO Check User login
 	// **TODO Check count from DB
