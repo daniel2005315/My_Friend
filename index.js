@@ -118,10 +118,11 @@ function doRequest(url) {
 }
 
 // Check if user exists in DB
-async function validateUser(email){
-	let result = await model.findUser(email);
+async function validateUser(accessToken){
+	let result = await model.findUser(accessToken);
 	return result;
 }
+
 // A few default intents to be handled
 app.launch( async function( request, response ) {
 	console.log("***[app.lauch]started");
@@ -191,6 +192,7 @@ app.launch( async function( request, response ) {
 		daily_count=0;
 	}
 
+
 	// options
 	options = {
 		headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
@@ -217,6 +219,7 @@ app.launch( async function( request, response ) {
 		var contexts = res.result.contexts;
 		// TODO Try setting session with array
 		session.set("contexts",contexts);
+		console.log(session);
 		// TODO:
 		// Function to check certain values within context
 		// Perform reactions e.g. Music streaming
@@ -239,11 +242,21 @@ app.intent("CatchAllIntent", {
   }
   ,
   async function(request,response) {
-		console.log("Log request");
-		console.log(request);
-		// Check dialog counter
-		// TODO retrieve from database
-		// dummy daily_count var for now
+		// Get session context
+		var session = request.getSession();
+		var context_array=session.get("contexts");
+		console.log("Logging session context object");
+		console.log(context_array);
+
+		if(session.get("accessToken")!=null){
+			console.log(session.get("accessToken"));
+		}else{
+			console.log("no access token");
+			response.linkAccount();
+			response.say("Please login with your Google account first.");
+			return;
+		}
+
 		if(daily_count!=0){
 	    var userIn = request.slot('speech');
 	    // TODO
@@ -263,13 +276,8 @@ app.intent("CatchAllIntent", {
 			if(score>0){sentiment="sentiment_positive"}
 			if(score<0){sentiment="sentiment_negative"}
 			if(score==0){sentiment="sentiment_neutral"}
-
-			// 7-4-2018 Add checking on session value in request
-			if(request.hasSession()){
-				console.log("Session object:");
-				var session = request.getSession();
-			  console.log(session);
-			}
+			// Form input context with previous output
+			var context_in = context_array.concat(sentiment);
 
 			var options = {
 				headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
@@ -278,7 +286,7 @@ app.intent("CatchAllIntent", {
 			    json:true,
 			    body: {
 						// added contexts var
-						"contexts":[sentiment],
+						"contexts":context_in,
 						"lang": "en",
 						"query": userIn,
 						"sessionId": "12345",
@@ -309,6 +317,9 @@ app.intent("CatchAllIntent", {
 			console.log("response result=>\n");
 			console.log(res.result);
 			var resSpeech = res.result.fulfillment.speech;
+			var contexts = res.result.contexts;
+			// TODO Try setting session with array
+			session.set("contexts",contexts);
 			daily_count++;
 			response.say(resSpeech);
 			response.shouldEndSession(false);
