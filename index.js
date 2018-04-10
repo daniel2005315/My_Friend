@@ -266,12 +266,13 @@ app.intent("CatchAllIntent", {
 		// Get session context
 		var session = request.getSession();
 		var context_array=session.get("contexts");
+		var accessToken;
 		console.log("Logging session context object");
 		console.log(context_array);
 
 		if(session!=null){
-			session = request.getSession();
-			console.log(session);
+			//session = request.getSession();
+			//console.log(session);
 			// Fixed, getting the accessToken by Alexa
 			accessToken = session.details.accessToken;
 			console.log("Get session function returns: "+accessToken);
