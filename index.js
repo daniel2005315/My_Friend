@@ -133,8 +133,8 @@ app.launch( async function( request, response ) {
 	if(request.getSession()!=null){
 		session = request.getSession();
 		console.log(session);
-		// Better way to get session variables
-		accessToken = session.get("accessToken");
+		// Fixed, getting the accessToken by Alexa
+		accessToken = session.details.accessToken;
 		console.log("Get session function returns: "+accessToken);
 	}
 
