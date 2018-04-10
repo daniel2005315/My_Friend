@@ -269,10 +269,20 @@ app.intent("CatchAllIntent", {
 		console.log("Logging session context object");
 		console.log(context_array);
 
-		if(session.get("accessToken")!=null){
-			console.log(session.get("accessToken"));
-		}else{
+		if(session!=null){
+			session = request.getSession();
+			console.log(session);
+			// Fixed, getting the accessToken by Alexa
+			accessToken = session.details.accessToken;
+			console.log("Get session function returns: "+accessToken);
+		}
+
+		console.log("***[catchAll]started");
+
+		if(accessToken==null){
 			console.log("no access token");
+			// 5-4-2018
+			// Account linking with Google
 			response.linkAccount();
 			response.say("Please login with your Google account first.");
 			return;
