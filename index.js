@@ -182,7 +182,7 @@ app.launch( async function( request, response ) {
 		}
 	  // 2. check user daily status
 		// 2.1 Look for today's record, if none, create one
-		usr_obj = await model.getUserTodaysRecord(accessToken);
+		user_obj = await model.getUserTodaysRecord(accessToken);
 
 		var options;
 		// **TODO Check count from DB
@@ -197,7 +197,7 @@ app.launch( async function( request, response ) {
 	    "lifespan": 3,
 	    "name": "user_info",
 	    "parameters": {
-	      "usr_name": usr_obj.name
+	      "usr_name": user_obj.name
 	    }
 	  };
 
