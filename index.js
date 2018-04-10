@@ -125,22 +125,6 @@ async function validateUser(accessToken){
 
 // A few default intents to be handled
 app.launch( async function( request, response ) {
-	console.log("***[app.lauch]started");
-
-	if(request.data.session.user.accessToken!=null)
-		console.log("acess token: "+request.data.session.user.accessToken);
-	else {
-		console.log("no access token");
-		// 5-4-2018
-		// Account linking with Google
-		response.linkAccount();
-		response.say("Please login with your Google account first.");
-		return;
-	}
-	// Check the whole requestType
-	console.log("LOGGING FULL request");
-	console.log(request);
-
 	// TODO: Test using request.getSession
 	var session;
 	var accessToken;
@@ -150,6 +134,21 @@ app.launch( async function( request, response ) {
 		accessToken = session.get("accessToken");
 		console.log("Get session function returns: "+accessToken);
 	}
+
+	console.log("***[app.lauch]started");
+
+	if(accessToken==null){
+		console.log("no access token");
+		// 5-4-2018
+		// Account linking with Google
+		response.linkAccount();
+		response.say("Please login with your Google account first.");
+		return;
+	}
+	// Check the whole requestType
+	//console.log("LOGGING FULL request");
+	//console.log(request);
+
 	// TODO: Now we have an authentidated Google users
 	// DO te followin
 	// 1. validate user in DB (use access token)
@@ -164,9 +163,9 @@ app.launch( async function( request, response ) {
 		console.log(result);
 	}
   // 2. check user daily status
+	// 2.1 Look for today's record
 
 	var options;
-	// **TODO Check User login
 	// **TODO Check count from DB
 	// **TODO Get user account type
 	// *** For current testing, assume all users are elderly
@@ -313,6 +312,8 @@ app.intent("CatchAllIntent", {
 		// aync API call
 		let res;
 		try{
+			console.log("=====Sending request with context==");
+			console.log(context_in);
 			let res = await doRequest(options);
 			console.log("response result=>\n");
 			console.log(res.result);
@@ -320,6 +321,7 @@ app.intent("CatchAllIntent", {
 			var contexts = res.result.contexts;
 			// TODO Try setting session with array
 			session.set("contexts",contexts);
+			console.log(contexts);
 			daily_count++;
 			response.say(resSpeech);
 			response.shouldEndSession(false);
