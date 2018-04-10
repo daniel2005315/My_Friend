@@ -305,9 +305,9 @@ app.intent("CatchAllIntent", {
 			console.log("----------count: "+daily_count+"----------");
 			// context input
 			var sentiment;
-			if(score>0){sentiment="sentiment_positive"}
-			if(score<0){sentiment="sentiment_negative"}
-			if(score==0){sentiment="sentiment_neutral"}
+			if(score>0){sentiment="{name:'sentiment_positive'}"}
+			if(score<0){sentiment="{name:'sentiment_negative'}"}
+			if(score==0){sentiment="{name:'sentiment_neutral'}"}
 			// Form input context with previous output
 			var context_in = context_array.concat(sentiment);
 
