@@ -123,6 +123,17 @@ async function validateUser(accessToken){
 	return result;
 }
 
+// Check if the sessionShould end from
+// result.metadata.endConversation
+async function checkEnd(res){
+	if(res.result.metadata.endConversation==true){
+		console.log("End of dialog");
+		return true;
+	}else{
+		return false;
+	}
+}
+
 // A few default intents to be handled
 app.launch( async function( request, response ) {
 	// TODO: Test using request.getSession
@@ -226,7 +237,10 @@ app.launch( async function( request, response ) {
 		// Function to check certain values within context
 		// Perform reactions e.g. Music streaming
 		response.say(resSpeech);
-		response.shouldEndSession(false);
+
+		// Check if session ends
+		let sessionEnd = await shouldEndSession(res);
+		response.shouldEndSession(sessionEnd);
 		daily_count++;
 	}catch(err){
 		console.log("Error =>"+err);
@@ -327,7 +341,10 @@ app.intent("CatchAllIntent", {
 			console.log(contexts);
 			daily_count++;
 			response.say(resSpeech);
-			response.shouldEndSession(false);
+			
+			// Check if session ends
+			let sessionEnd = await shouldEndSession(res);
+			response.shouldEndSession(sessionEnd);
 		}catch(err){
 			console.log(err);
 			response.say("Sorry there was an error, please try again later");
