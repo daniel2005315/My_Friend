@@ -134,11 +134,13 @@ async function checkEnd(res){
 	}
 }
 
+
 // A few default intents to be handled
 app.launch( async function( request, response ) {
 	// TODO: Test using request.getSession
 	var session;
 	var accessToken;
+	var user_obj;
 	// Lauch request cannot use session to identify user
 
 	if(request.getSession()!=null){
@@ -164,64 +166,67 @@ app.launch( async function( request, response ) {
 	//console.log(request);
 
 	// TODO: Now we have an authentidated Google users
-	// DO te followin
-	// 1. validate user in DB (use access token)
-	let result= await validateUser(accessToken);
-	if(result!=null){
-		console.log("user exists in db");
-		// Proceed with user
-	}else{
-		// This section should not be invoked
-		console.log("user not in DB yet, create new record and do init dialogs");
-		let result = await model.addUser("dummy",accessToken);
-		console.log(result);
-	}
-  // 2. check user daily status
-	// 2.1 Look for today's record
-
-	var options;
-	// **TODO Check count from DB
-	// **TODO Get user account type
-	// *** For current testing, assume all users are elderly
-	var e_name="daily_elder_init";
-	// TODO set session id with accesstoken
-	var sessionID="12345";
-	// TODO get user name from db
-	// Tried encoding user info in context variable
-	var user_context={
-    "lifespan": 3,
-    "name": "user_info",
-    "parameters": {
-      "usr_name": "Peter"
-    }
-  };
-
-	if(daily_count==0){
-		console.log("Daily starts");
-		// Send API call with daily_init_event
-	}else{
-		// Pass to CatchAll
-		console.log("Non Daily greetings");
-		daily_count=0;
-	}
-
-
-	// options
-	options = {
-		headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
-			url: 'https://api.dialogflow.com/v1/query?v=20150910',
-			method: 'POST',
-			json:true,
-			body: {
-				"contexts":[user_context],
-				"lang": "en",
-				"sessionId": sessionID,
-				// init event, empty query
-				"event":{"name": e_name}
-			}
-	};
-	// aync API call
 	try{
+		// DO te followin
+		// 1. validate user in DB (use access token)
+		let result= await validateUser(accessToken);
+		if(result!=null){
+			console.log("user exists in db");
+			// Proceed with user
+
+		}else{
+			// This section should not be invoked
+			console.log("user not in DB yet, create new record and do init dialogs");
+			let result = await model.addUser("dummy",accessToken);
+			console.log(result);
+		}
+	  // 2. check user daily status
+		// 2.1 Look for today's record, if none, create one
+		usr_obj = await model.getUserTodaysRecord(accessToken);
+
+		var options;
+		// **TODO Check count from DB
+		// **TODO Get user account type
+		// *** For current testing, assume all users are elderly
+		var e_name="daily_elder_init";
+		//set session id with accesstoken
+		var sessionID=accessToken;
+		// get user name from db
+		// Tried encoding user info in context variable
+		var user_context={
+	    "lifespan": 3,
+	    "name": "user_info",
+	    "parameters": {
+	      "usr_name": usr_obj.name
+	    }
+	  };
+
+		if(daily_count==0){
+			console.log("Daily starts");
+			// Send API call with daily_init_event
+		}else{
+			// Pass to CatchAll
+			console.log("Non Daily greetings");
+			daily_count=0;
+		}
+
+
+		// options
+		options = {
+			headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
+				url: 'https://api.dialogflow.com/v1/query?v=20150910',
+				method: 'POST',
+				json:true,
+				body: {
+					"contexts":[user_context],
+					"lang": "en",
+					"sessionId": sessionID,
+					// init event, empty query
+					"event":{"name": e_name}
+				}
+		};
+		// aync API call
+
 		console.log("Sending request");
 		let res = await doRequest(options);
 		console.log("response result=>\n");
@@ -239,7 +244,7 @@ app.launch( async function( request, response ) {
 		response.say(resSpeech);
 
 		// Check if session ends
-		let sessionEnd = await shouldEndSession(res);
+		let sessionEnd = await checkEnd(res);
 		response.shouldEndSession(sessionEnd);
 		daily_count++;
 	}catch(err){
@@ -341,9 +346,9 @@ app.intent("CatchAllIntent", {
 			console.log(contexts);
 			daily_count++;
 			response.say(resSpeech);
-			
+
 			// Check if session ends
-			let sessionEnd = await shouldEndSession(res);
+			let sessionEnd = await checkEnd(res);
 			response.shouldEndSession(sessionEnd);
 		}catch(err){
 			console.log(err);
