@@ -289,6 +289,7 @@ app.intent("CatchAllIntent", {
 		var accessToken;
 		var sessionId;
 		var user_obj;
+		var context_in;
 		console.log("[catchAll] Logging session context object");
 		console.log(context_array);
 
@@ -336,7 +337,12 @@ app.intent("CatchAllIntent", {
 			if(score<0){sentiment={name:'sentiment_negative'}}
 			if(score==0){sentiment={name:'sentiment_neutral'}}
 			// Form input context with previous output
-			var context_in = context_array.concat(sentiment);
+			if(context_array!=null){
+				// Bind sentiment with existing context if any
+				context_in = context_array.concat(sentiment);
+			}else {
+				context_in = sentiment;
+			}
 
 			var options = {
 				headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
