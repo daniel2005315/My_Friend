@@ -39,67 +39,70 @@ var AmazonSpeech = require('ssml-builder/amazon_speech');
 var daily_count=0;
 var session_sentiment=0;
 
-app.error = function( exception, request, response ) {
-	console.log(exception)
-	console.log(request);
-	console.log(response);
-	response.say( 'Sorry, an error occured ');
-	var content = exception;
-	response.card({
-		type:"Simple",
-		title:"Error",
-		content: content
-	});
-};
+// Default handlers of the skill
+{
+	app.error = function( exception, request, response ) {
+		console.log(exception)
+		console.log(request);
+		console.log(response);
+		response.say( 'Sorry, an error occured ');
+		var content = exception;
+		response.card({
+			type:"Simple",
+			title:"Error",
+			content: content
+		});
+	};
 
-// help messages
-app.intent("AMAZON.HelpIntent", {
-    "slots": {},
-    "utterances": []
-  },
-  function(request, response) {
-    var helpOutput = "You can say 'some statement' or ask 'some question'. You can also say stop or exit to quit.";
-    var reprompt = "What would you like to do?";
-    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
-    response.say(helpOutput).reprompt(reprompt).shouldEndSession(false);
-  }
-);
+	// help messages
+	app.intent("AMAZON.HelpIntent", {
+	    "slots": {},
+	    "utterances": []
+	  },
+	  function(request, response) {
+	    var helpOutput = "You can say 'some statement' or ask 'some question'. You can also say stop or exit to quit.";
+	    var reprompt = "What would you like to do?";
+	    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
+	    response.say(helpOutput).reprompt(reprompt).shouldEndSession(false);
+	  }
+	);
 
-//  stop an intent
-app.intent("AMAZON.StopIntent", function(request, response) {
-    var stopOutput = "Come back later!";
-		response.audioPlayerStop();
-    response.say(stopOutput);
-  }
-);
+	//  stop an intent
+	app.intent("AMAZON.StopIntent", function(request, response) {
+	    var stopOutput = "Come back later!";
+			response.audioPlayerStop();
+	    response.say(stopOutput);
+	  }
+	);
 
-// PAUSEINTENT is used to handle audio player interrupt
-// should be able to stop audio player
-app.intent("AMAZON.PauseIntent", function(request, response) {
-    var stopOutput = "Paused it for you";
-		response.audioPlayerStop();
-    response.say(stopOutput);
-  }
-);
+	// PAUSEINTENT is used to handle audio player interrupt
+	// should be able to stop audio player
+	app.intent("AMAZON.PauseIntent", function(request, response) {
+	    var stopOutput = "Paused it for you";
+			response.audioPlayerStop();
+	    response.say(stopOutput);
+	  }
+	);
 
-// Resume audio player status
-app.intent("AMAZON.ResumeIntent", function(request, response) {
-    var stopOutput = "It has not yet been implemented";
-		//response.audioPlayerStop();
-    response.say(stopOutput);
-  }
-);
+	// Resume audio player status
+	app.intent("AMAZON.ResumeIntent", function(request, response) {
+	    var stopOutput = "It has not yet been implemented";
+			//response.audioPlayerStop();
+	    response.say(stopOutput);
+	  }
+	);
 
-// respond to "Nothing"
-app.intent("AMAZON.CancelIntent", {
-    "slots": {},
-    "utterances": []
-  }, function(request, response) {
-    var cancelOutput = "No problem. Request cancelled.";
-    response.say(cancelOutput);
-		response.shouldEndSession(true);
-  }
-);
+	// respond to "Nothing"
+	app.intent("AMAZON.CancelIntent", {
+	    "slots": {},
+	    "utterances": []
+	  }, function(request, response) {
+	    var cancelOutput = "No problem. Request cancelled.";
+	    response.say(cancelOutput);
+			response.shouldEndSession(true);
+	  }
+	);
+}
 
 // wrapper for async usage of request
 function doRequest(url) {
@@ -135,24 +138,25 @@ async function checkEnd(res){
 }
 
 
-// A few default intents to be handled
+// Launch Intent
+// The following runs, When user call the invocation name on Alexa
 app.launch( async function( request, response ) {
-	// TODO: Test using request.getSession
 	var session;
 	var accessToken;
 	var user_obj;
-	// Lauch request cannot use session to identify user
+	var e_name;
 
 	if(request.getSession()!=null){
 		session = request.getSession();
 		console.log(session);
 		// Fixed, getting the accessToken by Alexa
 		accessToken = session.details.accessToken;
-		console.log("Get session function returns: "+accessToken);
+		//console.log("Get session function returns: "+accessToken);
 	}
 
-	console.log("***[app.lauch]started");
+	console.log("***[app.lauch] Started ***");
 
+	// Check if the user have logged in
 	if(accessToken==null){
 		console.log("no access token");
 		// 5-4-2018
@@ -165,34 +169,45 @@ app.launch( async function( request, response ) {
 	//console.log("LOGGING FULL request");
 	//console.log(request);
 
-	// TODO: Now we have an authentidated Google users
+	// We have an authentidated Google users
+	// Retreive user data from database
 	try{
 		// DO te followin
 		// 1. validate user in DB (use access token)
 		let result= await validateUser(accessToken);
 		if(result!=null){
-			console.log("user exists in db");
+			console.log("[validateUser] Completed. User exists in db.");
 			// Proceed with user
-
 		}else{
 			// This section should not be invoked
 			console.log("user not in DB yet, create new record and do init dialogs");
-			let result = await model.addUser("dummy",accessToken);
+			let result = await model.addUser("unknown",accessToken);
 			console.log(result);
 		}
 	  // 2. check user daily status
 		// 2.1 Look for today's record, if none, create one
+		// Returned user_obj, contains the following:
+		// .name : User name, how to call the user_info
+		// .record: the record object
+		// .record.owner: object of the user
+		console.log("[app.launch] Reading Daily record");
 		user_obj = await model.getUserTodaysRecord(accessToken);
 
 		var options;
-		// **TODO Check count from DB
-		// **TODO Get user account type
-		// *** For current testing, assume all users are elderly
-		var e_name="daily_elder_init";
+		// Check count from Daily Record
+		daily_count=user_obj.record.count;
+		console.log("[app.launch] Daily count = "+daily_count);
+		if(user_obj.record.owner.usr_type==="norm"){
+			// Normal user, set launch event to "daily_init_event"
+			e_name = "daily_init_event";
+		}else{
+			// elderly, set launch event to "daily_elder_init"
+			e_name = "daily_elder_init";
+		}
 		//set session id with accesstoken
 		var sessionID=accessToken;
 		// get user name from db
-		// Tried encoding user info in context variable
+		// encode user name to context variable
 		var user_context={
 	    "lifespan": 3,
 	    "name": "user_info",
@@ -263,6 +278,7 @@ app.intent("CatchAllIntent", {
   }
   ,
   async function(request,response) {
+		console.log("***[catchAll]started*****");
 		// Get session context
 		var session = request.getSession();
 		var context_array=session.get("contexts");
@@ -275,10 +291,10 @@ app.intent("CatchAllIntent", {
 			//console.log(session);
 			// Fixed, getting the accessToken by Alexa
 			accessToken = session.details.accessToken;
-			console.log("Get session function returns: "+accessToken);
+			//console.log("Get session function returns: "+accessToken);
 		}
 
-		console.log("***[catchAll]started");
+
 
 		if(accessToken==null){
 			console.log("no access token");
