@@ -142,6 +142,7 @@ async function checkEnd(res){
 // The following runs, When user call the invocation name on Alexa
 app.launch( async function( request, response ) {
 	var session;
+	var sessionID;
 	var accessToken;
 	var user_obj;
 	var e_name;
@@ -197,34 +198,35 @@ app.launch( async function( request, response ) {
 		// Check count from Daily Record
 		daily_count=user_obj.record.count;
 		console.log("[app.launch] Daily count = "+daily_count);
-		if(user_obj.record.owner.usr_type==="norm"){
-			// Normal user, set launch event to "daily_init_event"
-			e_name = "daily_init_event";
+
+		if(daily_count==0){
+			console.log("[app.launch] Daily starts");
+			// Send API call with daily_init_event
+
+			if(user_obj.record.owner.usr_type==="norm"){
+				// Normal user, set launch event to "daily_init_event"
+				e_name = "daily_init_event";
+			}else{
+				// elderly, set launch event to "daily_elder_init"
+				e_name = "daily_elder_init";
+			}
 		}else{
-			// elderly, set launch event to "daily_elder_init"
-			e_name = "daily_elder_init";
+			// NON- First time daily CatchAllIntent
+			// set event to "daily_user_status"
+			e_name = "daily_user_status";
 		}
+
 		//set session id with accesstoken
-		var sessionID=accessToken;
+		sessionID=accessToken;
 		// get user name from db
 		// encode user name to context variable
 		var user_context={
-	    "lifespan": 3,
+	    "lifespan": 1,
 	    "name": "user_info",
 	    "parameters": {
 	      "usr_name": user_obj.name
 	    }
 	  };
-
-		if(daily_count==0){
-			console.log("Daily starts");
-			// Send API call with daily_init_event
-		}else{
-			// Pass to CatchAll
-			console.log("Non Daily greetings");
-			daily_count=0;
-		}
-
 
 		// options
 		options = {
@@ -242,17 +244,18 @@ app.launch( async function( request, response ) {
 		};
 		// aync API call
 
-		console.log("Sending request");
+		console.log("[app.launch] Sending request");
 		let res = await doRequest(options);
-		console.log("response result=>\n");
-		console.log(res.result.fulfillment);
+		console.log("[app.launch] response result=>\n");
+		console.log(res.result);
 		var resSpeech = res.result.fulfillment.speech;
 		// Output contexts
 		// Store it to request Session object to persist the value
 		var contexts = res.result.contexts;
 		// TODO Try setting session with array
 		session.set("contexts",contexts);
-		console.log(session);
+		console.log("[app.launch] Setting contexts in session");
+		console.log(session.contexts);
 		// TODO:
 		// Function to check certain values within context
 		// Perform reactions e.g. Music streaming
@@ -261,7 +264,8 @@ app.launch( async function( request, response ) {
 		// Check if session ends
 		let sessionEnd = await checkEnd(res);
 		response.shouldEndSession(sessionEnd);
-		daily_count++;
+		// Update DB async
+		model.updateUserDailyRecord(accessToken,"count",daily_count+1);
 	}catch(err){
 		console.log("Error =>"+err);
 		response.say("Sorry there was an error, please try again later");
@@ -283,7 +287,9 @@ app.intent("CatchAllIntent", {
 		var session = request.getSession();
 		var context_array=session.get("contexts");
 		var accessToken;
-		console.log("Logging session context object");
+		var sessionId;
+		var user_obj;
+		console.log("[catchAll] Logging session context object");
 		console.log(context_array);
 
 		if(session!=null){
@@ -294,8 +300,6 @@ app.intent("CatchAllIntent", {
 			//console.log("Get session function returns: "+accessToken);
 		}
 
-
-
 		if(accessToken==null){
 			console.log("no access token");
 			// 5-4-2018
@@ -304,6 +308,13 @@ app.intent("CatchAllIntent", {
 			response.say("Please login with your Google account first.");
 			return;
 		}
+		// use accessToken as sessionid
+		sessionId = accessToken;
+
+		console.log("[catchALL] Reading Daily record");
+		user_obj = await model.getUserTodaysRecord(accessToken);
+		daily_count=user_obj.record.count;
+		console.log("[catchALL] Daily count = "+daily_count);
 
 		if(daily_count!=0){
 	    var userIn = request.slot('speech');
@@ -337,12 +348,19 @@ app.intent("CatchAllIntent", {
 						"contexts":context_in,
 						"lang": "en",
 						"query": userIn,
-						"sessionId": "12345",
+						"sessionId": sessionId,
 						//optional "timezone": "America/New_York"
 					}
 			};
 		}else{
 			// *** Code reuse
+			if(user_obj.record.owner.usr_type==="norm"){
+				// Normal user, set launch event to "daily_init_event"
+				e_name = "daily_init_event";
+			}else{
+				// elderly, set launch event to "daily_elder_init"
+				e_name = "daily_elder_init";
+			}
 			// Send API call with daily_init_event
 			var options = {
 				headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
@@ -351,9 +369,9 @@ app.intent("CatchAllIntent", {
 					json:true,
 					body: {
 						"lang": "en",
-						"sessionId": "12345",
+						"sessionId": sessionId,
 						// init event, empty query
-						"event":{"name": "daily_init_event"}
+						"event":{"name": e_name}
 					}
 			};
 		}
@@ -361,22 +379,24 @@ app.intent("CatchAllIntent", {
 		// aync API call
 		let res;
 		try{
-			console.log("=====Sending request with context==");
+			console.log("[catchALL]=====Sending request with context==");
 			console.log(context_in);
 			let res = await doRequest(options);
-			console.log("response result=>\n");
+			console.log("[catchALL] response result=>\n");
 			console.log(res.result);
 			var resSpeech = res.result.fulfillment.speech;
 			var contexts = res.result.contexts;
 			// TODO Try setting session with array
 			session.set("contexts",contexts);
+			console.log("[catchALL] setting contexts with:");
 			console.log(contexts);
-			daily_count++;
 			response.say(resSpeech);
 
 			// Check if session ends
 			let sessionEnd = await checkEnd(res);
 			response.shouldEndSession(sessionEnd);
+			// Update DB async
+			model.updateUserDailyRecord(accessToken,"count",daily_count+1);
 		}catch(err){
 			console.log(err);
 			response.say("Sorry there was an error, please try again later");
@@ -430,7 +450,9 @@ app.intent("WhoIntent", function(request,response){
 	});
 });
 
-// TODO:  Connect it to database so the result is based on database value
+// TODO:
+// Incoperate the song playing function into the dialog model ***
+// TODO
 app.intent("PickMusicIntent", {},
   function(request,response) {
 		return dacdtabase.find("favorite.music.song").then(function(result){
@@ -464,735 +486,6 @@ app.intent("PickMusicIntent", {},
   }
 );
 
-// TODO: Handle the player object
 
-
-
-// Intent that train your friend to know more about you
-// ShareIntent is a wrapper that redirects the user to specific intents for handling different topics
-// Redirects to:
-// ShareMusicIntent (For music related)
-// ShareMovieIntent (For movies related)
-// ShareWorkIntent  (For work related)
-// ... others are work in process
-app.intent("ShareIntent",{
-		"slots":{
-			"userInfo": "UserInfo",
-			"subject": "Subject"
-		}
-	},function(request, response) {
-			var subject = request.slot('subject');
-			if(subject==null){
-				var dialog = [{
-						"type": "Dialog.ElicitSlot",
-						"slotToElicit": "subject",
-				}];
-				var clarify = "What would you like to talk about?";
-				var reprompt = "What is it about?";
-				response.response.response.directives=dialog;
-		    // AMAZON.HelpIntent must leave session open -> .shouldEndSession(false)
-		    response.say(clarify).reprompt(reprompt).shouldEndSession(false);
-			}else{
-				var content = JSON.stringify(request);
-				var slot = request.data.request.intent.slots.subject;
-				var resolutionArray = slot.resolutions.resolutionsPerAuthority;
-				var resolution=resolutionArray[0];
-				var valueArray = resolution.values;
-				if(valueArray==null){
-					var dialog = [{
-							"type": "Dialog.ElicitSlot",
-							"slotToElicit": "subject",
-							"updatedIntent": {
-						    "name": "ShareIntent",
-						    "confirmationStatus": "NONE",
-						    "slots": {
-						      "subject": {
-						        "name": "subject",
-						        "value": null,
-						        "confirmationStatus": "NONE"
-						      },
-									"shareAction": {
-						        "name": "shareAction",
-						        "confirmationStatus": "NONE"
-						      },
-									"preference": {
-						        "name": "preference",
-						        "confirmationStatus": "NONE"
-						      }
-						    }
-						  }
-					}];
-					response.response.response.directives=dialog;
-					response.say("I'm not sure what it is, what is it related to?");
-					response.shouldEndSession(false);
-				}else{
-					var entry = valueArray[0];
-					console.log(entry);
-					var id = entry.value.id;
-					// If there is no match, the value will be null
-					content = id;
-					//var status = request.data.request.intent.slots.subject.resolutions.resolutionsPerAuthority.values.value.id;
-					response.card({
-						type:"Simple",
-						title:"Request received",
-						content: content
-					});
-
-					if(id==="MUSIC")
-					{
-						// call back for handling music
-						//shareMusicCB(request,response);
-						console.log(request);
-						return shareMusicAsync(request).then(function(result){
-							console.log(result);
-							if(result.dialog!=null)
-								response.response.response.directives=result.dialog;
-							if(result.card!=null)
-								response.card(result.card);
-							response.say(result.speech);
-							response.shouldEndSession(result.sessionEnd);
-						});
-					}
-					if(id==="FYP")
-					{
-						console.log(request);
-						return shareFYPAsync(request).then(function(result){
-							console.log(result);
-							if(result.dialog!=null)
-								response.response.response.directives=result.dialog;
-							if(result.card!=null)
-								response.card(result.card);
-							response.say(result.speech);
-							response.shouldEndSession(result.sessionEnd);
-
-							var url = "https://evening-savannah-89199.herokuapp.com/music/floating.mp3";
-							var stream={
-								"token": "90",
-								"url": url,
-								"offsetInMilliseconds": 0
-							}
-							console.log("playing: "+url);
-
-							// Start the play directive
-							response.audioPlayerPlayStream("REPLACE_ALL", stream)
-						});
-					}
-				}
-			}
-	}
-);
-
-app.intent("ShareMusicIntent", {
-    "slots": {
-      "songName": "AMAZON.MusicRecording",
-      "musicGenre": "AMAZON.Genre",
-			"musician": "AMAZON.MusicGroup",
-			"preference": "PreferencePhrase"
-    }
-  },function(request,response){
-		return shareMusicAsync(request).then(function(result){
-			console.log(result);
-			if(result.dialog!=null)
-				response.response.response.directives=result.dialog;
-			if(result.card!=null)
-				response.card(result.card);
-			response.say(result.speech);
-			response.shouldEndSession(result.sessionEnd);
-		});
-	}
-);
-
-// 26-1-2018 function for authentication check
-function loginCheck(request){
-	return new Promise((resolve,reject)=>{
-		if(request.data.session.user.accessToken == undefined){
-			var speech = "Please login to your Amazon account in the companion app to start using this skill";
-			var sessionEnd = true;
-			var authState = false;
-		}else{
-			var speech = "How are you doing?";
-			var sessionEnd = false;
-			var authState = true;
-		}
-		var result={
-			"speech": speech,
-			"sessionEnd": sessionEnd,
-			"auth": authState
-		}
-		resolve(result);
-});
-}
-// Async Work handler
-function shareFYPAsync(request){
-	return new Promise((resolve,reject)=>{
-			var feel = request.slot('feeling');
-			console.log("***analysing sentiment");
-			var score = sentiment_Analyser.getScore(feel);
-
-			var speech = "I know you did not sleep last night. Relax and listen to some music.";
-			var sessionEnd=true;
-			// Card display for details
-			var content="Floating-Chillstep";
-			var card={
-				type:"Simple",
-				title:"I picked this song for you",
-				content: content
-			};
-			var result={
-				"speech": speech,
-				"sessionEnd": sessionEnd,
-				"card":card
-			}
-
-
-			// pass promise back
-			resolve(result);
-});
-}
-
-// Working
-function shareMusicAsync(request){
-	return new Promise((resolve,reject)=>{
-
-		var song = request.slot('songName'); 	//    3
-		var genre = request.slot('musicGenre'); //  5
-		var musician = request.slot('musician'); // 7
-		var preference=request.slot('preference');
-		var dialogState = request.data.request.dialogState;
-		if(dialogState==null||dialogState!="COMPLETED"){
-			console.log("*****************ShareMusic Dialog NOT COMPLETED");
-			console.log("song:"+song);
-			console.log("genre:"+genre);
-			console.log("musician:"+musician);
-			console.log("preference:"+preference);
-			var check=checkMusicSlots(song,genre,musician);
-			if(check==0){
-				//response.say("Go on");
-				//response.shouldEndSession(false);
-				var speech = "Go on";
-				var sessionEnd = false;
-				var card={
-					type:"Simple",
-					title:"No slot values",
-					content: ""
-				};
-				var result={
-
-					"speech": speech,
-					"sessionEnd": sessionEnd,
-					"card":card
-				}
-				// pass promise back
-				resolve(result);
-			}
-			if(check==3){
-				console.log("*** song name");
-				if(preference==null){
-					//console.log(request.directive());
-					var dialog = [{
-							"type": "Dialog.ElicitSlot",
-							"slotToElicit": "musicGenre",
-					}];
-					var result=entityClassifier.classify(song);
-					console.log(result);
-					var content = "Classifier got =>"+result;
-					var speech="Isn't that a "+result+" song?";
-					var card={
-						type:"Simple",
-						title:"Got song name",
-						content: content
-					};
-
-					var sessionEnd = false;
-					var result={
-						"dialog": dialog,
-						"speech": speech,
-						"sessionEnd": sessionEnd,
-						"card": card
-					}
-					// pass promise back
-					resolve(result);
-
-				}else{
-					console.log("**analysisng sentiment");
-					var score = sentiment_Analyser.getScore(preference);
-					// TODO: update score in DB
-					// set new favourite in DB
-					var sentiment="";
-					if(score>0)
-						sentiment="like";
-					if(score<0){
-						sentiment="don't like";
-					}
-					if(score==0)
-						sentiment="are fine";
-					var speech="I know that you "+sentiment+" it. I got it now for you.";
-					var sessionEnd = true;
-					var content ="You "+sentiment+" the song: "+song+"\n Echo got your preference value: "+preference;
-					var card={
-						type:"Simple",
-						title:"Sentiment about a song",
-						content: content
-					};
-
-					var result={
-						"speech": speech,
-						"sessionEnd": sessionEnd,
-						"card": card
-					}
-					// pass promise back
-					resolve(result);
-
-				}
-			}
-			if(check==5){
-				console.log("*** genre");
-				if(preference==null){
-					// got the genre
-					var dialog = [{
-							"type": "Dialog.ElicitSlot",
-							"slotToElicit": "preference",
-					}];
-					var sessionEnd=false;
-					var speech="Do you like"+genre+" music?";
-					var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
-					var card={
-						type:"Simple",
-						title:"Got Genre",
-						content: content
-					};
-
-					var result={
-						"dialog": dialog,
-						"speech": speech,
-						"sessionEnd": sessionEnd,
-						"card": card
-					}
-					// pass promise back
-					resolve(result);
-
-				}else{
-					console.log("**analysisng sentiment");
-					var score = sentiment_Analyser.getScore(preference);
-					// update score in DB
-					// set new favourite in DB
-					var sentiment="";
-					if(score>0)
-						sentiment="like";
-					else {
-						sentiment="don't like"
-					}
-					var speech="I've got that down for you. I know that you "+sentiment+" it";
-					var sessionEnd=true;
-					var result={
-						"speech": speech,
-						"sessionEnd": sessionEnd
-					}
-					// update database async
-					database.update(genre);
-					// pass promise back
-					resolve(result);
-				}
-
-			}
-			if(check==7){
-				console.log("*** musician");
-				// Check preference
-				if(preference==null){
-					// got the musician
-
-					// basic handling here
-					var dialog = [{
-							"type": "Dialog.ElicitSlot",
-							"slotToElicit": "preference",
-					}];
-					var speech="Do you like them?";
-					var sessionEnd =false;
-					var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
-					var card={
-						type:"Simple",
-						title:"Got Genre",
-						content: content
-					};
-					var result={
-						"dialog": dialog,
-						"speech": speech,
-						"sessionEnd": sessionEnd,
-						"card": card
-					}
-					// pass promise back
-					resolve(result);
-				}else{
-					console.log("**analysisng sentiment");
-					var score = sentiment_Analyser.getScore(preference);
-					var sentiment="";
-					if(score>0)
-						sentiment="like";
-					else {
-						sentiment="don't like"
-					}
-					var speech="I know that you "+sentiment+" it";
-					var sessionEnd=true;
-					var result={
-						"speech": speech,
-						"sessionEnd": sessionEnd,
-					}
-					// pass promise back
-					resolve(result);
-
-				}
-
-			}
-			if(check>=8){
-				console.log("*** multiple slots received");
-				// got multiple slots
-				if(preference!=null){
-					var score = sentiment_Analyser.getScore(preference);
-					var sentiment="";
-					if(score>0)
-						sentiment="like";
-					else {
-						sentiment="don't like"
-					}
-					var speech="I know that you "+sentiment+" it";
-					var sessionEnd=true;
-					var result={
-						"speech": speech,
-						"sessionEnd": sessionEnd,
-					}
-					// pass promise back
-					resolve(result);
-
-				}else{
-					var dialog = [{
-							"type": "Dialog.ElicitSlot",
-							"slotToElicit": "preference",
-					}];
-					var speech="Do you like it?";
-					var sessionEnd=false;
-					var result={
-						"dialog": dialog,
-						"speech": speech,
-						"sessionEnd": sessionEnd
-					}
-					// pass promise back
-					resolve(result);
-
-				}
-			}
-		}else {
-			var content="song= "+song+"\nGenre: "+genre+"\nmusician:"+musician;
-				var card={
-					type:"Simple",
-					title:"Intent end",
-					content: content
-				};
-				var speech = "Thank you for your sharing";
-				var sessionEnd=true;
-				var result={
-					"speech": speech,
-					"sessionEnd": sessionEnd,
-					"card":card
-				}
-				// pass promise back
-				resolve(result);
-		}
-
-	});
-}
-
-// VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
-// WORKS
-// ShareMusicIntent Callback
-// Buggy VVV
-/*
-function shareMusicCB(request,response) {
-	// testing slot values
-	var song = request.slot('songName'); 	//    3
-	var genre = request.slot('musicGenre'); //  5
-	var musician = request.slot('musician'); // 7
-	var preference=request.slot('preference');
-
-	// Get the dialogState (DONE)
-	var dialogState = request.data.request.dialogState;
-	if(dialogState==null||dialogState!="COMPLETED"){
-		console.log("*****************ShareMusic Dialog NOT COMPLETED");
-		var check=checkMusicSlots(song,genre,musician);
-		if(check==0){
-			response.say("Go on");
-			response.shouldEndSession(false);
-
-			var dialog = [{
-					"type": "Dialog.ElicitSlot",
-					"slotToElicit": "preference",
-			}];
-			// TODO: Set the custom directives
-			response.response.response.directives=dialog;
-
-		}
-		if(check==3){
-			console.log("*** song name");
-			if(preference==null){
-				//console.log(request.directive());
-				var dialog = [{
-						"type": "Dialog.ElicitSlot",
-						"slotToElicit": "musicGenre",
-				}];
-				// TODO: Set the custom directives
-				response.response.response.directives=dialog;
-				console.log(response.response.response.directives);
-				console.log(response);
-				var result=entityClassifier.classify(song);
-				console.log(result);
-				var content = "Classifier got =>"+result;
-				response.shouldEndSession(false);
-				var speech="Isn't that a "+result+" song?";
-				response.say(speech);
-				response.card({
-					type:"Simple",
-					title:"Got song name",
-					content: content
-				});
-			}else{
-				console.log("**analysisng sentiment");
-				var score = sentiment_Analyser.getScore(preference);
-
-				// update score in DB
-
-				// set new favourite in DB
-				var sentiment="";
-				if(score>0)
-					sentiment="like";
-				if(score<0){
-					sentiment="don't like";
-				}
-				if(score==0)
-					sentiment="are fine";
-				var speech="I know that you "+sentiment+" it. I got it now for you.";
-				response.say(speech);
-				response.shouldEndSession(true);
-				var content ="You "+sentiment+" the song: "+song+"\n Echo got your preference value: "+preference;
-				response.card({
-					type:"Simple",
-					title:"Sentiment about a song",
-					content: content
-				});
-
-			}
-		}
-		if(check==5){
-			console.log("*** genre");
-			if(preference==null){
-				// got the genre
-				var dialog = [{
-						"type": "Dialog.ElicitSlot",
-						"slotToElicit": "preference",
-				}];
-				// TODO: Set the custom directives
-				response.response.response.directives=dialog;
-				console.log(response.response.response.directives);
-				console.log(response);
-				response.shouldEndSession(false);
-				var speech="Do you like"+genre+" music?";
-				response.say(speech);
-				var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
-				response.card({
-					type:"Simple",
-					title:"Got Genre",
-					content: content
-				});
-
-			}else{
-				console.log("**analysisng sentiment");
-				var score = sentiment_Analyser.getScore(preference);
-
-				// update score in DB
-
-				// set new favourite in DB
-				var sentiment="";
-				if(score>0)
-					sentiment="like";
-				else {
-					sentiment="don't like"
-				}
-				var speech="I know that you "+sentiment+" it";
-				response.say(speech);
-				response.shouldEndSession(true);
-
-			}
-
-		}
-		if(check==7){
-			console.log("*** musician");
-			// Check preference
-			if(preference==null){
-				// got the musician
-
-				// basic handling here
-				var dialog = [{
-						"type": "Dialog.ElicitSlot",
-						"slotToElicit": "preference",
-				}];
-				var speech="Do you like them?";
-				response.response.response.directives=dialog;
-				response.shouldEndSession(false);
-				var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
-				response.card({
-					type:"Simple",
-					title:"Got Genre",
-					content: content
-				});
-				response.say(speech);
-			}else{
-				console.log("**analysisng sentiment");
-				var score = sentiment_Analyser.getScore(preference);
-				var sentiment="";
-				if(score>0)
-					sentiment="like";
-				else {
-					sentiment="don't like"
-				}
-				var speech="I know that you "+sentiment+" it";
-				response.say(speech);
-				response.shouldEndSession(true);
-
-			}
-
-		}
-		if(check>=8){
-			console.log("*** multiple slots received");
-			// got multiple slots
-			if(preference!=null){
-				var score = sentiment_Analyser.getScore(preference);
-				var sentiment="";
-				if(score>0)
-					sentiment="like";
-				else {
-					sentiment="don't like"
-				}
-				var speech="I know that you "+sentiment+" it";
-				response.say(speech);
-				response.shouldEndSession(true);
-			}else{
-				var dialog = [{
-						"type": "Dialog.ElicitSlot",
-						"slotToElicit": "preference",
-				}];
-				response.response.response.directives=dialog;
-				response.shouldEndSession(false);
-				var speech="Do you like it?";
-				response.say(speech);
-			}
-			var content="song: "+song+"\ngenre: "+genre+"\nmusician: "+musician;
-			response.card({
-				type:"Simple",
-				title:"Got Genre",
-				content: content
-			});
-		}
-	}else {
-		var content="song= "+song+"\nGenre: "+genre+"\nmusician:"+musician;
-			response.card({
-				type:"Simple",
-				title:"Intent end",
-				content: content
-			});
-			response.say("Thanks for sharing, ");
-	}
-}
-
-
-/* Template for ElicitSlot directive
-{
-  "version": "1.0",
-  "sessionAttributes": {},
-  "response": {
-    "outputSpeech": {
-      "type": "PlainText",
-      "text": "From where did you want to start your trip?"
-    },
-    "shouldEndSession": false,
-    "directives": [
-      {
-        "type": "Dialog.ElicitSlot",
-        "slotToElicit": "fromCity",
-      }
-    ]
-  }
-}
-*/
-// TODO: Testing intent to work with dialog
-app.intent("DialogTestIntent", {
-		"dialog":{
-			type:"delegate"
-		},
-    "slots": {
-      "animal": "AMAZON.Animal",
-      "music_genre": "AMAZON.Genre",
-			"general_info": "UserInfo"
-    }
-  }
-  ,
-  function(request,response) {
-		// testing slot values
-		var animal = request.slot('animal');
-    var music_genre = request.slot('music_genre');
-		var general_info = request.slot('UserInfo');
-
-		// TODO To get the dialogState (DONE)
-		var dialogState = request.data.request.dialogState;
-		if(dialogState==null||dialogState!="COMPLETED"){
-			console.log(request.type());
-			console.log(request.directive);
-			//console.log(request.directive());
-			var dialog = [{
-					  "type": "Dialog.Delegate"
-			}];
-			// TODO: Set the custom directives
-			response.response.response.directives=dialog;
-			console.log(response.response.response.directives);
-			console.log(response);
-			response.shouldEndSession(false);
-			var content="State= "+dialogState;
-			response.card({
-				type:"Simple",
-				title:"TestDialogIntent",
-				content: content
-			});
-
-		}else {
-					response.say("Outputs are, "+music_genre+animal+" with final message:"+general_info);
-		}
-	}
-);
-
-// TODO: utility function
-// Checking music slots, the sum of values represent which slots are present
-function checkMusicSlots(song,genre,musician){
-	var check=0;
-	if(song!=null)
-		check+=3;
-	if(genre!=null)
-		check+=5;
-	if(musician!=null)
-		check+=7;
-	return check;
-}
-
-// 23-1-2018 Added Language related skills
-// Intent for translating a language
-app.intent("TranslateIntent", {
-    "slots": {
-      "phrase": "FreePhrase",
-      "language": "AMAZON.Language"
-    }
-  },function(request,response){
-
-		var phrase = request.slot('phrase');
-    var language = request.slot('language');
-		// test if Literal can capture free speech input
-    response.say("You want to translate "+ phrase+" into "+language);
-	}
-);
 
 module.exports = app;
