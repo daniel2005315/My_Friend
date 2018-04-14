@@ -292,7 +292,7 @@ app.intent("CatchAllIntent", {
 		var context_in;
 		console.log("[catchAll] Logging session context object");
 		console.log(context_array);
-
+		// Get use Token from session object
 		if(session!=null){
 			//session = request.getSession();
 			//console.log(session);
@@ -402,7 +402,10 @@ app.intent("CatchAllIntent", {
 			let sessionEnd = await checkEnd(res);
 			response.shouldEndSession(sessionEnd);
 			// Update DB async
+			// update daily count
 			model.updateUserDailyRecord(accessToken,"count",daily_count+1);
+			// update daily avg score
+			model.updateUserDailyRecord(accessToken,"avg_sentiment_score",session_sentiment);
 		}catch(err){
 			console.log(err);
 			response.say("Sorry there was an error, please try again later");
@@ -493,5 +496,8 @@ app.intent("PickMusicIntent", {},
 );
 
 
+// TODO: Stream radio with Drible
+// API key: 83a5369601147cb64f5c57f533
+// authorize by http://api.dirble.com/v2/stations?token={your token}
 
 module.exports = app;
