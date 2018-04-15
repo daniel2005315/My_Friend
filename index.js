@@ -137,6 +137,49 @@ async function checkEnd(res){
 	}
 }
 
+// TODO function to check input upon RECEIVING
+async function checkInput(res){
+
+}
+
+
+// AFTER RECEIVING RES*****
+// TODO: Function to check the context in respond to determine for any action
+async function checkAction(res){
+	// action array to set in session to tell next input what to expect
+	console.log("[checkContext] Starts");
+
+	var result=res.result;
+	var contexts=result.contexts;
+	var action="none";
+	var param=null;
+	// check if collectable params exists
+	// result.actionIncomplete = true -> do not extract param
+	if(result.actionIncomplete==false){
+		// extract parameters
+		if(result.parameters!=null){
+			param=result.parameters;
+			console.log("completed action params:");
+			console.log(param);
+		}
+	}
+	// possible contexts
+	// Test: test_start , test_end
+	if(contexts.indexOf("test_start")!=0){
+		// start "test"
+
+	}else{
+
+	}
+	// Music:
+	if(contexts.indexOf("play_music")!=0){
+		// TODO: play_music context is an object containin the streaming url
+
+	}
+
+	return action;
+}
+
 
 // Launch Intent
 // The following runs, When user call the invocation name on Alexa
@@ -388,6 +431,9 @@ app.intent("CatchAllIntent", {
 			console.log("[catchALL]=====Sending request with context==");
 			console.log(context_in);
 			let res = await doRequest(options);
+
+			// TODO: check context for reactions
+			let action = await checkAction(res);
 			console.log("[catchALL] response result=>\n");
 			console.log(res.result);
 			var resSpeech = res.result.fulfillment.speech;
