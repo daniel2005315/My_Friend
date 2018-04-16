@@ -151,8 +151,8 @@ async function checkAction(res){
 
 	var result=res.result;
 	var contexts=result.contexts;
-	var action="none";
-	var param=null;
+	var action=result.action;
+	var param=result.parameters;
 	// check if collectable params exists
 	// result.actionIncomplete = true -> do not extract param
 	if(result.actionIncomplete==false){
@@ -161,23 +161,29 @@ async function checkAction(res){
 			param=result.parameters;
 			console.log("completed action params:");
 			console.log(param);
+
+			// possible contexts
+			// Test: test_start , test_end
+			if(contexts.indexOf("test_start")!=0){
+				// start "test"
+
+			}else{
+
+			}
+			// Music:
+			if(contexts.indexOf("play_music")!=0){
+				// TODO: play_music context is an object containin the streaming url
+
+			}
+
+			return action;
+
 		}
-	}
-	// possible contexts
-	// Test: test_start , test_end
-	if(contexts.indexOf("test_start")!=0){
-		// start "test"
-
 	}else{
-
-	}
-	// Music:
-	if(contexts.indexOf("play_music")!=0){
-		// TODO: play_music context is an object containin the streaming url
-
+		// action incomplete, returns
+		return "none";
 	}
 
-	return action;
 }
 
 
