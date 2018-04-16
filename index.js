@@ -339,6 +339,7 @@ app.intent("CatchAllIntent", {
 		var sessionId;
 		var user_obj;
 		var context_in;
+		var e_name="";
 		console.log("[catchAll] Logging session context object");
 		console.log(context_array);
 		// Get use Token from session object
