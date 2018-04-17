@@ -176,7 +176,7 @@ async function checkAction(res){
 				action_flag=1;
 
 			}
-			if(action==="action.stop.music"){
+			if(action==="action.stop.music"||action==="smalltalk.confirmation.cancel"){
 				action_flag=2;
 			}
 
