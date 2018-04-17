@@ -148,18 +148,25 @@ async function findRadio(category){
 	console.log("[findRadio] Sending get request");
 	try{
 		let res = await doRequest(url);
-		var stream;
+		var stream, streams;
 		var stations = JSON.parse(res);
+		var count=0;
 		stations.forEach(function(station){
-			stream= station.streams[0].stream;
-			if(stream.lastIndexOf("https",0)===0){
-				// check if the stream starts with https
-				result.name=stations.name;
-				result.url=stream;
-				return result;
-			}
+			// array of streams link
+			streams= station.streams;
+			streams.forEach(function(channel){
+				stream=channel.stream;
+				console.log("looking at: "+stream);
+				if(stream.lastIndexOf("https",0)===0){
+					// check if the stream starts with https
+					result.name=station.name;
+					result.url=stream;
+					return result;
+				}
+			});
+			count++;
 		});
-		console.log("[findRadio] No suitable Result");
+		console.log("[findRadio] No suitable Result after looking at "+count+" stations");
 		// TODO get first result
 		return result;
 
