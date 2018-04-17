@@ -148,7 +148,7 @@ async function checkInput(res){
 async function checkAction(res){
 	// action array to set in session to tell next input what to expect
 	console.log("[checkContext] Starts");
-
+	var action_flag=0;
 	var result=res.result;
 	var contexts=result.contexts;
 	var action=result.action;
@@ -171,17 +171,21 @@ async function checkAction(res){
 
 			}
 			// Music:
-			if(contexts.indexOf("play_music")!=0){
+			if(action==="action.play.music"){
 				// TODO: play_music context is an object containin the streaming url
+				action_flag=1;
 
 			}
+			if(action==="action.stop.music"){
+				action_flag=2;
+			}
 
-			return action;
+			return action_flag;
 
 		}
 	}else{
 		// action incomplete, returns
-		return "none";
+		return action_flag;
 	}
 
 }
@@ -310,6 +314,7 @@ app.launch( async function( request, response ) {
 		// Perform reactions e.g. Music streaming
 		response.say(resSpeech);
 
+		//-------------------------------------END
 		// Check if session ends
 		let sessionEnd = await checkEnd(res);
 		response.shouldEndSession(sessionEnd);
@@ -443,12 +448,46 @@ app.intent("CatchAllIntent", {
 			let action = await checkAction(res);
 			console.log("[catchALL] response result=>\n");
 			console.log(res.result);
+
 			var resSpeech = res.result.fulfillment.speech;
 			var contexts = res.result.contexts;
-			// TODO Try setting session with array
+
+			// TODO: Perform action according to "action" and "context"
+			switch(action){
+				// 0. none, no further action
+				case 0:
+					break;
+				// 1. play Music
+				case 1:
+					var url = "https://alexa-server-ck.herokuapp.com/music/floating.mp3";
+					var stream={
+						"token": "90",
+						"url": url,
+						"offsetInMilliseconds": 0
+					};
+					// Card display for details
+					var content=song;
+					response.card({
+						type:"Simple",
+						title:"I picked this song for you",
+						content: content
+					});
+					// Start the play directive
+					response.audioPlayerPlayStream("REPLACE_ALL", stream)
+					break;
+				// 2. Stop any playing directives
+				case 2:
+					response.audioPlayerStop();
+					break;
+			}
+
+
+			//Setting session with array
 			session.set("contexts",contexts);
 			console.log("[catchALL] setting contexts with:");
 			console.log(contexts);
+
+			// Speech response
 			response.say(resSpeech);
 
 			// Check if session ends
