@@ -144,8 +144,8 @@ async function findRadio(category){
 	console.log("[findRadio] Sending get request");
 	try{
 		let res = await doRequest(url);
-		console.log("[findRadio] First Result");
-		console.log(res[0]);
+		console.log("[findRadio] Result");
+		console.log(res);
 	}catch(err){
 		console.log(err);
 	}
