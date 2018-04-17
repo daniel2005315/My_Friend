@@ -151,24 +151,37 @@ async function findRadio(category){
 		var stream, streams;
 		var stations = JSON.parse(res);
 		var count=0;
-		stations.forEach(function(station){
+		var flag1=false;
+		var flag2=false;
+		// use some to check on every entry
+		flag1=stations.some(function(station){
 			// array of streams link
 			streams= station.streams;
-			streams.forEach(function(channel){
+
+			flag2=streams.some(function(channel){
 				stream=channel.stream;
 				console.log("looking at: "+stream);
 				if(stream.lastIndexOf("https",0)===0){
 					console.log("FOUND!");
 					// check if the stream starts with https
+					if(stream.indexOf(" ")==-1){
+						result.url=stream;
+					}else{
+						result.url=stream.substring(0,stream.indexOf(" "))
+					}
 					result.name=station.name;
-					result.url=stream;
-					return result;
+					return true;
 				}
 			});
 			count++;
+			if(flag2==true)
+				return true;
 		});
-		console.log("[findRadio] No suitable Result after looking at "+count+" stations");
-		// TODO get first result
+		if(flag1==true)
+			return result;
+		else {
+			console.log("[findRadio] No suitable Result after looking at "+count+" stations");
+		}
 		return result;
 
 	}catch(err){
