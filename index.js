@@ -158,10 +158,12 @@ async function findRadio(category){
 				stream=channel.stream;
 				console.log("looking at: "+stream);
 				if(stream.lastIndexOf("https",0)===0){
+					console.log("FOUND!");
 					// check if the stream starts with https
 					result.name=station.name;
 					result.url=stream;
 					return result;
+					break;
 				}
 			});
 			count++;
@@ -525,6 +527,7 @@ app.intent("CatchAllIntent", {
 						"url": url,
 						"offsetInMilliseconds": 0
 					};
+					console.log("Playing link: "+url);
 					response.audioPlayerPlayStream("REPLACE_ALL", stream);
 					sessionEnd=true;
 					break;
