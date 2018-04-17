@@ -163,7 +163,6 @@ async function findRadio(category){
 					result.name=station.name;
 					result.url=stream;
 					return result;
-					break;
 				}
 			});
 			count++;
