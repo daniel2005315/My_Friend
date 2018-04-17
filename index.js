@@ -137,9 +137,18 @@ async function checkEnd(res){
 	}
 }
 
-// TODO function to check input upon RECEIVING
-async function checkInput(res){
-
+// TODO function to find radio station using given category code
+async function findRadio(category){
+	var code = category;
+	var url="http://api.dirble.com/v2/category/"+code+"/stations?token=83a5369601147cb64f5c57f533";
+	console.log("[findRadio] Sending get request");
+	try{
+		let res = await doRequest(url);
+		console.log("[findRadio] First Result");
+		console.log(res[0]);
+	}catch(err){
+		console.log(err);
+	}
 }
 
 
@@ -166,7 +175,6 @@ async function checkAction(res){
 			// Test: test_start , test_end
 			if(contexts.indexOf("test_start")!=0){
 				// start "test"
-
 			}else{
 
 			}
@@ -174,10 +182,12 @@ async function checkAction(res){
 			if(action==="action.play.music"){
 				// TODO: play_music context is an object containin the streaming url
 				action_flag=1;
-
 			}
 			if(action==="action.stop.music"||action==="smalltalk.confirmation.cancel"){
 				action_flag=2;
+			}
+			if(action==="action.play.radio"){
+				action_flag=3;
 			}
 
 			return action_flag;
@@ -459,6 +469,7 @@ app.intent("CatchAllIntent", {
 					break;
 				// 1. play Music
 				case 1:
+				// TODO: Change url according to user's info
 					var url = "https://alexa-server-ck.herokuapp.com/music/floating.mp3";
 					var stream={
 						"token": "90",
@@ -472,6 +483,11 @@ app.intent("CatchAllIntent", {
 				case 2:
 					response.audioPlayerStop();
 					break;
+				case 3:
+				// 3. Find radio stream url
+					// TODO
+				  console.log("Finding radio with cate: ",res.result.parameters.radio_category);
+					let result = await findRadio(res.result.parameters.radio_category);
 			}
 
 
@@ -579,6 +595,7 @@ app.intent("PickMusicIntent", {},
 
   }
 );
+
 
 
 // TODO: Stream radio with Drible
