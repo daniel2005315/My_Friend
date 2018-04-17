@@ -139,6 +139,10 @@ async function checkEnd(res){
 
 // TODO function to find radio station using given category code
 async function findRadio(category){
+	var result={
+		name:"",
+		url:""
+	};
 	var code = category;
 	var url="http://api.dirble.com/v2/category/"+code+"/stations?token=83a5369601147cb64f5c57f533";
 	console.log("[findRadio] Sending get request");
@@ -147,7 +151,9 @@ async function findRadio(category){
 		var stations = JSON.parse(res);
 		console.log("[findRadio] Result");
 		// TODO get first result
-		console.log(stations[0]);
+		result.name=stations[0].name;
+		result.url=stations[0].streams[0].stream;
+		return result;
 	}catch(err){
 		console.log(err);
 	}
@@ -464,6 +470,11 @@ app.intent("CatchAllIntent", {
 			var resSpeech = res.result.fulfillment.speech;
 			var contexts = res.result.contexts;
 
+			// Check if session ends
+			// may be overited by following actions
+			let sessionEnd = await checkEnd(res);
+
+
 			// TODO: Perform action according to "action" and "context"
 			switch(action){
 				// 0. none, no further action
@@ -479,7 +490,8 @@ app.intent("CatchAllIntent", {
 						"offsetInMilliseconds": 0
 					};
 					// Start the play directive
-					response.audioPlayerPlayStream("REPLACE_ALL", stream)
+					response.audioPlayerPlayStream("REPLACE_ALL", stream);
+					sessionEnd=true;
 					break;
 				// 2. Stop any playing directives
 				case 2:
@@ -490,6 +502,16 @@ app.intent("CatchAllIntent", {
 					// TODO
 				  console.log("Finding radio with cate: ",res.result.parameters.radio_category);
 					let result = await findRadio(res.result.parameters.radio_category);
+					resSpeech="I have found this station called "+result.name;
+					var url = result.url;
+					var stream={
+						"token": "90",
+						"url": url,
+						"offsetInMilliseconds": 0
+					};
+					response.audioPlayerPlayStream("REPLACE_ALL", stream);
+					sessionEnd=true;
+					break;
 			}
 
 
@@ -500,10 +522,8 @@ app.intent("CatchAllIntent", {
 
 			// Speech response
 			response.say(resSpeech);
-
-			// Check if session ends
-			let sessionEnd = await checkEnd(res);
 			response.shouldEndSession(sessionEnd);
+
 			// Update DB async
 			// update daily count
 			model.updateUserDailyRecord(accessToken,"count",daily_count+1);
