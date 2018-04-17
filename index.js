@@ -465,13 +465,6 @@ app.intent("CatchAllIntent", {
 						"url": url,
 						"offsetInMilliseconds": 0
 					};
-					// Card display for details
-					var content=song;
-					response.card({
-						type:"Simple",
-						title:"I picked this song for you",
-						content: content
-					});
 					// Start the play directive
 					response.audioPlayerPlayStream("REPLACE_ALL", stream)
 					break;
