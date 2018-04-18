@@ -67,7 +67,7 @@ var session_sentiment=0;
 	  }
 	);
 
-	//  stop an intent
+	//  stop audio player
 	app.intent("AMAZON.StopIntent", function(request, response) {
 	    var stopOutput = "Come back later!";
 			response.audioPlayerStop();
@@ -343,9 +343,9 @@ app.launch( async function( request, response ) {
 					"event":{"name": e_name}
 				}
 		};
-		// aync API call
 
 		console.log("[app.launch] Sending request");
+		// aync API call
 		let res = await doRequest(options);
 		console.log("[app.launch] response result=>\n");
 		console.log(res.result);
@@ -353,15 +353,18 @@ app.launch( async function( request, response ) {
 		// Output contexts
 		// Store it to request Session object to persist the value
 		var contexts = res.result.contexts;
-		// TODO Try setting session with array
+		// setting session with context array
 		session.set("contexts",contexts);
 		console.log("[app.launch] Setting contexts in session");
 		console.log(session.contexts);
-		// TODO:
-		// Function to check certain values within context
-		// Perform reactions e.g. Music streaming
+
+
 		response.say(resSpeech);
 
+
+
+		// Function to check certain values within context
+		// Perform reactions e.g. Music streaming
 		//-------------------------------------END
 		// Check if session ends
 		let sessionEnd = await checkEnd(res);
