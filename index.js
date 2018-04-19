@@ -570,13 +570,14 @@ app.intent("CatchAllIntent", {
 							"lang": "en",
 							"sessionId": sessionId,
 							// init event, empty query
-							"event":{"name": "session_cancel"},
+							"event":{"name": "session_end"},
 							"resetContexts":true
 						}
 				};
 				doRequest(options);
 				// empty the context
-				session.set("contexts","");
+				console.log("emptying session with clear");
+				session.clear();
 
 
 			}else{
