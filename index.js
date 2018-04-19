@@ -586,7 +586,7 @@ app.intent("CatchAllIntent", {
 			}
 			// Speech response
 			response.say(resSpeech);
-			session.shouldEndSession(sessionEnd);
+			response.shouldEndSession(sessionEnd);
 
 			// Update DB async
 			// update daily count
