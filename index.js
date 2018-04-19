@@ -572,6 +572,7 @@ app.intent("CatchAllIntent", {
 							"resetContexts":true
 						}
 				};
+				doRequest(options);
 				// empty the context
 				session.set("contexts","");
 
