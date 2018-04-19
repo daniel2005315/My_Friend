@@ -577,7 +577,7 @@ app.intent("CatchAllIntent", {
 				doRequest(options);
 				// empty the context
 				console.log("emptying session with clear");
-				session.clear();
+				session.clear("contexts");
 
 
 			}else{
