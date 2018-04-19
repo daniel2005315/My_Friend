@@ -550,6 +550,8 @@ app.intent("CatchAllIntent", {
 					sessionEnd=true;
 					break;
 				case 4:
+					sessionEnd=false;
+					break;
 					// Update the DB with the body condition parameters
 
 			}
