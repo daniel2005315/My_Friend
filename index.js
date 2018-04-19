@@ -549,9 +549,13 @@ app.intent("CatchAllIntent", {
 					response.audioPlayerPlayStream("REPLACE_ALL", stream);
 					sessionEnd=true;
 					break;
+				case 4:
+					// Update the DB with the body condition parameters
+
 			}
 
 			if(sessionEnd===true){
+				console.log("session Ends TRUE");
 				// reset dialogflow context
 				var options = {
 					headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
@@ -570,6 +574,7 @@ app.intent("CatchAllIntent", {
 				session.set("contexts","");
 
 			}else{
+				console.log("session Ends FALSE");
 				//Setting session with array
 				session.set("contexts",contexts);
 				console.log("[catchALL] setting contexts with:");
