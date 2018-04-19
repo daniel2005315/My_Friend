@@ -557,8 +557,9 @@ app.intent("CatchAllIntent", {
 					// Update the DB with the body condition parameters
 
 			}
-
-			if(sessionEnd===true){
+			console.log("sessionEnd value:");
+			console.log(sessionEnd);
+			if(sessionEnd==true){
 				console.log("session Ends TRUE");
 				// reset dialogflow context
 				var options = {
