@@ -575,6 +575,7 @@ app.intent("CatchAllIntent", {
 				// empty the context
 				session.set("contexts","");
 
+
 			}else{
 				console.log("session Ends FALSE");
 				//Setting session with array
@@ -584,7 +585,7 @@ app.intent("CatchAllIntent", {
 			}
 			// Speech response
 			response.say(resSpeech);
-
+			session.shouldEndSession(sessionEnd);
 
 			// Update DB async
 			// update daily count
