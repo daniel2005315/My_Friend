@@ -548,15 +548,33 @@ app.intent("CatchAllIntent", {
 					break;
 			}
 
+			if(sessionEnd===true){
+				// reset dialogflow context
+				var options = {
+					headers: {"Authorization": "Bearer d25cbadf552a43eba0ed4d4905e98858"},
+						url: 'https://api.dialogflow.com/v1/query?v=20150910',
+						method: 'POST',
+						json:true,
+						body: {
+							"lang": "en",
+							"sessionId": sessionId,
+							// init event, empty query
+							"event":{"name": "session_cancel"},
+							"resetContexts":true
+						}
+				};
+				// empty the context
+				session.set("contexts","");
 
-			//Setting session with array
-			session.set("contexts",contexts);
-			console.log("[catchALL] setting contexts with:");
-			console.log(contexts);
-
+			}else{
+				//Setting session with array
+				session.set("contexts",contexts);
+				console.log("[catchALL] setting contexts with:");
+				console.log(contexts);
+			}
 			// Speech response
 			response.say(resSpeech);
-			response.shouldEndSession(sessionEnd);
+
 
 			// Update DB async
 			// update daily count
