@@ -551,6 +551,8 @@ app.intent("CatchAllIntent", {
 					break;
 				case 4:
 					sessionEnd=false;
+					// update database
+					model.updateUserDailyRecordAdd(accessToken,"body",-0.5);
 					break;
 					// Update the DB with the body condition parameters
 
