@@ -227,6 +227,9 @@ async function checkAction(res){
 			if(action==="action.play.radio"){
 				action_flag=3;
 			}
+			if(action==="body.problem"){
+				action_flag=4;
+			}
 
 			return action_flag;
 
