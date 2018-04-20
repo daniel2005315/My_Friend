@@ -209,13 +209,6 @@ async function checkAction(res){
 			console.log("completed action params:");
 			console.log(param);
 
-			// possible contexts
-			// Test: test_start , test_end
-			if(contexts.indexOf("test_start")!=0){
-				// start "test"
-			}else{
-
-			}
 			// Music:
 			if(action==="action.play.music"){
 				// TODO: play_music context is an object containin the streaming url
@@ -233,6 +226,9 @@ async function checkAction(res){
 
 			return action_flag;
 
+		}
+		if(action==="init.positive"){
+			action_flag=5;
 		}
 	}else{
 		// action incomplete, returns
@@ -555,6 +551,22 @@ app.intent("CatchAllIntent", {
 					model.updateUserDailyRecordAdd(accessToken,"body",-0.5);
 					break;
 					// Update the DB with the body condition parameters
+				case 5:
+					sessionEnd=false;
+					// update database
+					model.updateUserDailyRecordAdd(accessToken,"mental",1);
+					break;
+				case 6:
+					sessionEnd=false;
+					// update database
+					model.updateUserDailyRecordAdd(accessToken,"body",1);
+					break;
+				case 7:
+					sessionEnd=false;
+					// update database
+					model.updateUserDailyRecordAdd(accessToken,"mental",1);
+					break;
+
 
 			}
 			console.log("sessionEnd value:");
